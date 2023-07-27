@@ -2,3 +2,5 @@ a.out
 .dist
 .vscode
 *.o
+ircserv
+vector.cpp

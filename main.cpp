@@ -6,11 +6,11 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 19:54:40 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/27 18:51:53 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/28 00:00:35 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "irc.hpp"
+#include "Server.hpp"
 
 // basic socket communication (server)
 int main(int ac, char **av)
@@ -37,7 +37,7 @@ int main(int ac, char **av)
 	if (!servParams.createSocket())
 		return (EXIT_FAILURE);
 
-	if (!servParams.listenConn())
+	if (!servParams.listenForConn())
 		return (EXIT_FAILURE);
 
 	std::cout << "Listening ......\n";
@@ -47,6 +47,7 @@ int main(int ac, char **av)
 	pfds[0].fd = servParams.getServFd();
 	pfds[0].events = POLLIN;
 	char msg[1024];
+	Parser parser;
 
 	struct sockaddr_storage client_addr;
 	socklen_t c_len = sizeof(client_addr);
@@ -107,12 +108,19 @@ int main(int ac, char **av)
 					}
 					else
 					{
+						parser.parseInput(msg);
+						std::vector<std::string> res = parser.getRes();
+						for (std::vector<std::string>::iterator i=res.begin(); i!= res.end(); ++i)
+						{
+							std::cout << "[" << *i << "]\t";
+						}
+
 						// parse_input(msg)
-						printf("%s", msg);
+						// printf("%s", msg);
 						memset(msg, 0, sizeof(msg));
-						strcpy(msg, "received\r\n");
-						send(pfds[i].fd, msg, sizeof(msg), 0);
-						memset(msg, 0, sizeof(msg));
+						// strcpy(msg, "received\r\n");
+						// send(pfds[i].fd, msg, sizeof(msg), 0);
+						// memset(msg, 0, sizeof(msg));
 					}
 				}
 			}

@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   irc.hpp                                            :+:      :+:    :+:   */
+/*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/27 16:25:36 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/27 23:52:11 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef IRC_HPP
-#define IRC_HPP
+#ifndef SERVER_HPP
+#define SERVER_HPP
 #include <iostream>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -24,7 +24,7 @@
 #include <sstream>
 #include <errno.h>
 #include <poll.h>
-
+#include "Parser.hpp"
 
 class ServParams
 {
@@ -44,9 +44,10 @@ class ServParams
 
 		bool getServAddrInfo(void);
 		bool createSocket(void);
-		bool listenConn(void) const;
+		bool listenForConn(void) const;
 
 	private:
+		
 		std::string _password;
 		int _port;
 		int _servfd;

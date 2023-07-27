@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   irc.cpp                                            :+:      :+:    :+:   */
+/*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/27 15:36:28 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/27 23:44:35 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "irc.hpp"
+#include "Server.hpp"
 
 ServParams::ServParams(std::string pass, int const port): _password(pass), _port(port), _servfd(-1), _res(NULL)
 {
@@ -65,7 +65,7 @@ bool ServParams::getServAddrInfo(void)
 {
 	struct addrinfo hints;
 
-	memset(&hints, 0, sizeof(hints));
+	std::memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_flags = AI_PASSIVE;
 	hints.ai_socktype = SOCK_STREAM;
@@ -90,7 +90,7 @@ bool ServParams::getServAddrInfo(void)
 bool ServParams::createSocket(void)
 {
 	struct addrinfo *p;
-	int yes = 1;
+	int val = 1;
 
 	for (p = _res; p != NULL; p = p->ai_next)
 	{
@@ -100,9 +100,8 @@ bool ServParams::createSocket(void)
 			std::cerr << "socket " << strerror(errno) << std::endl;
 			continue ;
 		}
-		if (setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+		if (setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)) == -1)
 		{
-			close(_servfd);
 			freeaddrinfo(_res);
 			std::cerr << "setsockopt " << strerror(errno) << std::endl;
 			return (false);
@@ -128,7 +127,7 @@ bool ServParams::createSocket(void)
 /*
 	** listen for incoming connection
 */
-bool ServParams::listenConn(void) const
+bool ServParams::listenForConn(void) const
 {
 	if (listen(_servfd, std::numeric_limits<int>::max()) == -1)
 	{
