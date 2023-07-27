@@ -1,33 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.hpp                                         :+:      :+:    :+:   */
+/*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/27 19:53:47 by abiru            ###   ########.fr       */
+/*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
+/*   Updated: 2023/07/27 21:09:34 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
-#include <iostream>
-#include <string>
+#ifndef CHANNEL_HPP
+#define CHANNEL_HPP
+#include "Client.hpp"
+#include <vector>
 
-class Client
+class Channel
 {
 	public:
-		Client();
-		~Client();
+		Channel();
+		~Channel();
 
-	// msg format: USER username * * :full_name
-	//             NICK nick
 	private:
-		std::string _nick;
-		std::string _userName;
-		std::string _fullName;
-		bool _isRegistered;
-
+		std::vector<Client *> _members;
+		Client *_operator;
 };
 #endif

@@ -1,4 +1,4 @@
 a.out
 .dist
 .vscode
-.o
+*.o

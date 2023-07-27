@@ -1,33 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.hpp                                         :+:      :+:    :+:   */
+/*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/27 19:53:47 by abiru            ###   ########.fr       */
+/*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
+/*   Updated: 2023/07/27 19:55:51 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
-#include <iostream>
-#include <string>
+#include "Client.hpp"
 
-class Client
-{
-	public:
-		Client();
-		~Client();
+Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false)
+{}
 
-	// msg format: USER username * * :full_name
-	//             NICK nick
-	private:
-		std::string _nick;
-		std::string _userName;
-		std::string _fullName;
-		bool _isRegistered;
+Client::~Client()
+{}
 
-};
-#endif
