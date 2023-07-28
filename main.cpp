@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 19:54:40 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/28 00:00:35 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/28 14:23:08 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ int main(int ac, char **av)
 	socklen_t c_len = sizeof(client_addr);
 	int conn;
 
-	while (1)
+	while (true)
 	{
 		int polled_fds = poll(pfds, fd_count, -1);
 		if ( polled_fds == -1)
@@ -108,21 +108,34 @@ int main(int ac, char **av)
 					}
 					else
 					{
-						parser.parseInput(msg);
-						std::vector<std::string> res = parser.getRes();
-						for (std::vector<std::string>::iterator i=res.begin(); i!= res.end(); ++i)
+						parser.parseInput(msg, " \t");
+						std::vector<std::string> const &res = parser.getRes();
+						if (!servParams.isRegistered(pfds[i].fd))
 						{
-							std::cout << "[" << *i << "]\t";
+							servParams.registerUser(pfds[i].fd, res);
+							// register user
 						}
-
-						// parse_input(msg)
-						// printf("%s", msg);
+						// if (res.front() == "NICK")
+						// {
+						// 	if (res.size() == 2)
+						// 		std::cout << "user wants to register\r\n";
+						// }
+						// for (std::vector<std::string>::const_iterator i=res.begin(); i!= res.end(); ++i)
+						// {
+						// 	std::cout << "[" << *i << "]\t";
+						// }
+						// std::cout << '\n';
+						parser.resetRes();
 						memset(msg, 0, sizeof(msg));
 						// strcpy(msg, "received\r\n");
 						// send(pfds[i].fd, msg, sizeof(msg), 0);
 						// memset(msg, 0, sizeof(msg));
 					}
 				}
+			}
+			else if (pfds[i].revents & POLLOUT)
+			{
+				// someone is ready to send data
 			}
 		}
 	}

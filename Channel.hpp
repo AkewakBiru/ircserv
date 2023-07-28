@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/27 21:09:34 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/28 14:04:12 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class Channel
 		~Channel();
 
 	private:
-		std::vector<Client *> _members;
-		Client *_operator;
+		std::vector<Client> _members;
+		Client _operator;
 };
 #endif

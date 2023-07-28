@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/27 23:52:11 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/28 14:23:29 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,9 @@
 #include <errno.h>
 #include <poll.h>
 #include "Parser.hpp"
+#include "Client.hpp"
+#include "Channel.hpp"
+#include <algorithm>
 
 class ServParams
 {
@@ -46,11 +49,19 @@ class ServParams
 		bool createSocket(void);
 		bool listenForConn(void) const;
 
+		void addClient(Client &client);
+		void removeClient(Client &client);
+		bool isRegistered(int fd);
+		void registerUser(int fd, std::vector<std::string> const &res);
+		std::vector<Client>::iterator findFd(std::vector<Client>& client, int fd);
+
 	private:
-		
 		std::string _password;
 		int _port;
 		int _servfd;
 		struct addrinfo *_res;
+
+		std::vector<Client> _clients;
+		std::vector<Channel*> _channels;
 };
 #endif

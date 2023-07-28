@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:24:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/27 23:36:22 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/28 11:44:50 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,9 @@ class Parser
 	public:
 		Parser();
 		~Parser();
-		std::vector<std::string> getRes(void) const;
-		bool parseInput(char const *data);
+		std::vector<std::string>const &getRes(void) const;
+		void resetRes(void);
+		bool parseInput(char const *data, std::string const &delim);
 
 	private:
 		std::vector<std::string> _res;

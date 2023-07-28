@@ -6,13 +6,13 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/27 23:44:35 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/28 14:33:31 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-ServParams::ServParams(std::string pass, int const port): _password(pass), _port(port), _servfd(-1), _res(NULL)
+ServParams::ServParams(std::string pass, int const port): _password(pass), _port(port), _servfd(-1), _res(NULL), _clients(0), _channels(0)
 {
 }
 
@@ -125,7 +125,7 @@ bool ServParams::createSocket(void)
 }
 
 /*
-	** listen for incoming connection
+	** listens for incoming connection
 */
 bool ServParams::listenForConn(void) const
 {
@@ -135,4 +135,66 @@ bool ServParams::listenForConn(void) const
 		return (false);
 	}
 	return (true);
+}
+
+void ServParams::addClient(Client &client)
+{
+	_clients.push_back(client);
+}
+
+static bool isEqual(Client const &client, int fd)
+{
+	return (fd == client.getFd());
+}
+
+std::vector<Client>::iterator ServParams::findFd(std::vector<Client>& client, int fd)
+{
+	for (std::vector<Client>::iterator it = client.begin(); it != client.end(); ++it)
+	{
+		if (isEqual(*it, fd))
+			return it;
+	}
+	return client.end();
+}
+
+void ServParams::removeClient(Client &client)
+{
+	std::vector<Client>::iterator finder = findFd(_clients, client.getFd());
+	if (finder != _clients.end())
+		_clients.erase(finder);
+}
+
+bool ServParams::isRegistered(int fd)
+{
+	for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		if (isEqual(*it, fd))
+			return (true);
+	}
+	return (false);
+}
+
+void ServParams::registerUser(int fd, std::vector<std::string> const &res)
+{
+	std::string const &cmd = res.front();
+	if (cmd == "NICK" || cmd == "USER")
+	{
+		if (cmd == "NICK")
+		{
+			if (res.size() == 2)
+			{
+				Client client;
+				client.setNick(res[1]);
+				client.setFd(fd);
+				_clients.push_back(client);
+			}
+		}
+		// else if (cmd == "USER")
+		// {
+		// 	if (res.size() >= 5)
+		// 	{
+				
+		// 	}
+		// }
+	}
 }
