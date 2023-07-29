@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:26:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/28 12:08:08 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/28 18:00:25 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,16 @@ Parser::~Parser()
 std::vector<std::string> const &Parser::getRes(void) const
 {
 	return (_res);
+}
+
+bool Parser::isSpaces(std::string const &str)
+{
+	for (std::string::const_iterator i=str.begin(); i!=str.end(); ++i)
+	{
+		if (!std::isspace(*i))
+			return (false);
+	}
+	return (true);
 }
 
 bool Parser::parseInput(char const *data, std::string const &delim)
@@ -41,7 +51,7 @@ bool Parser::parseInput(char const *data, std::string const &delim)
 			end = val.find_first_of(delim, start);
 		}
 
-		if (start < val.length())
+		if (start < val.length() && !isSpaces(val))
 			_res.push_back(val.substr(start));
 	}
 	return (true);
