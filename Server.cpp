@@ -6,25 +6,14 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/29 16:11:51 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/29 21:26:59 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 ServParams::ServParams(std::string pass, int const port): _password(pass), _port(port), _servfd(-1), _res(NULL), _fdCount(0), _pfds(NULL), _clients(0), _channels(0)
-{
-}
-
-const char *ServParams::InvalidPortException::what() const throw()
-{
-	return ("Port out of Range, valid range [1 - 65535]");
-}
-
-const char *ServParams::InvalidPasswordException::what() const throw()
-{
-	return ("Password can't be empty");
-}
+{}
 
 ServParams::~ServParams()
 {
@@ -52,9 +41,11 @@ int ServParams::getPort() const
 void ServParams::checkParams() const
 {
 	if (_port < 1 || _port > 65535)
-		throw InvalidPortException();
+		throw std::out_of_range("Port out of Range, valid range [1 - 65535]");
 	if (_password.length() == 0)
-		throw InvalidPasswordException();
+		throw std::invalid_argument("Password can't be empty");
+	else if (hasWhiteSpace(_password))
+		throw std::invalid_argument("Password can't have whitespaces");
 }
 
 void ServParams::setServFd(int const fd)
@@ -154,6 +145,8 @@ bool ServParams::handleRequest(void)
 	struct sockaddr_storage client_addr;
 	socklen_t c_len = sizeof(client_addr);
 	int conn;
+	void *addr;
+	char ip[INET6_ADDRSTRLEN];
 	
 	addNewConn(_servfd);
 
@@ -180,8 +173,6 @@ bool ServParams::handleRequest(void)
 					}
 					else
 					{
-						void *addr;
-						char ip[INET6_ADDRSTRLEN];
 						if (((struct sockaddr *)&client_addr)->sa_family == AF_INET)
 							addr = &((struct sockaddr_in *)&client_addr)->sin_addr;
 						else
@@ -192,7 +183,7 @@ bool ServParams::handleRequest(void)
 				}
 				else
 				{
-					memset(msg, 0, 1024);
+					std::memset(msg, 0, 1024);
 					int data = recv(_pfds[i].fd, msg, 1023, 0);
 					// here server reads data from the sockets and parses it, 
 					// if syntax is right, performs op on it
@@ -215,10 +206,10 @@ bool ServParams::handleRequest(void)
 							std::vector<std::string> const &res = parser.getRes();
 							if (!isRegistered(_pfds[i].fd))
 							{
-								registerUser(_pfds[i].fd, res);
+								registerUser(_pfds[i].fd, res, msg);
 								if (!isRegistered(_pfds[i].fd))
 								{
-									memset(msg, 0, 1024);
+									std::memset(msg, 0, 1024);
 									std::strcpy(msg, "Incorrect password\r\n");
 									send(_pfds[i].fd,msg, sizeof(msg), 0);
 									memset(msg, 0, 1024);
@@ -338,7 +329,7 @@ bool ServParams::isRegistered(int fd)
 	return (false);
 }
 
-bool ServParams::registerUser(int fd, std::vector<std::string> const &res)
+bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char const *msg)
 {
 	std::string const &cmd = res.front();
 	if (cmd != "PASS")

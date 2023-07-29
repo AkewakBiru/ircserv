@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/29 16:11:17 by abiru            ###   ########.fr       */
+/*   Updated: 2023/07/29 21:25:53 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,24 +24,17 @@
 #include <sstream>
 #include <errno.h>
 #include <poll.h>
+#include <algorithm>
 #include "Parser.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
-#include <algorithm>
+#include "IrcUtils.hpp"
 
 class ServParams
 {
 	public:
 		ServParams(std::string pass, int const port);
 		~ServParams();
-		class InvalidPortException: public std::exception
-		{
-			const char *what () const throw();
-		};
-		class InvalidPasswordException: public std::exception
-		{
-			const char *what () const throw();
-		};
 		void setPass(std::string &newPass);
 		int getPort() const;
 		std::string const &getPass() const;
@@ -60,7 +53,7 @@ class ServParams
 		void addClient(Client &client);
 		void removeClient(Client &client);
 		bool isRegistered(int fd);
-		bool registerUser(int fd, std::vector<std::string> const &res);
+		bool registerUser(int fd, std::vector<std::string> const &res, char const *msg);
 		std::vector<Client>::iterator findFd(std::vector<Client>& client, int fd);
 
 	private:

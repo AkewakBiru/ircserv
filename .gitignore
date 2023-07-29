@@ -3,4 +3,4 @@ a.out
 .vscode
 *.o
 ircserv
-vector.cpp
+vector.*
