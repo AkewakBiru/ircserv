@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/29 21:26:59 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/02 10:39:29 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -289,6 +289,7 @@ void ServParams::removeConn(int index)
 	}
 	if (_pfds)
 		delete[] _pfds;
+	_fdCount--;
 	_pfds = tmp;
 }
 
