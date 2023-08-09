@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/29 21:25:53 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/08 21:01:19 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <sstream>
 #include <errno.h>
 #include <poll.h>
+#include <fcntl.h>
 #include <algorithm>
 #include "Parser.hpp"
 #include "Client.hpp"
@@ -50,11 +51,13 @@ class ServParams
 		void addNewConn(int fd);
 		void removeConn(int index);
 
-		void addClient(Client &client);
-		void removeClient(Client &client);
+		bool deleteConnection(int fd);
+
+		void addClient(Client *client);
+		void removeClient(Client *client);
 		bool isRegistered(int fd);
 		bool registerUser(int fd, std::vector<std::string> const &res, char const *msg);
-		std::vector<Client>::iterator findFd(std::vector<Client>& client, int fd);
+		std::vector<Client *>::iterator findFd(std::vector<Client *>& client, int fd);
 
 	private:
 		std::string _password;
@@ -62,9 +65,9 @@ class ServParams
 		int _servfd;
 		struct addrinfo *_res;
 		int _fdCount;
-		struct pollfd* _pfds;
+		std::vector<pollfd> _pfds;
 
-		std::vector<Client> _clients;
-		std::vector<Channel*> _channels;
+		std::vector<Client *> _clients;
+		std::vector<Channel *> _channels;
 };
 #endif

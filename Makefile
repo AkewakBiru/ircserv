@@ -6,7 +6,7 @@
 #    By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/30 10:40:42 by abiru             #+#    #+#              #
-#    Updated: 2023/07/29 21:19:54 by abiru            ###   ########.fr        #
+#    Updated: 2023/08/08 21:19:43 by abiru            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ CXX = c++
 # CXXFLAGS = -Wextra -Werror -Wall 
 CXXFLAGS = -std=c++98
 
-SRCS = main.cpp Server.cpp Client.cpp Parser.cpp IrcUtils.cpp
+SRCS = main.cpp Server.cpp Client.cpp Parser.cpp IrcUtils.cpp Channel.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

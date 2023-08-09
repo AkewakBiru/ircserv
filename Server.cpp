@@ -6,21 +6,21 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/02 10:39:29 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/09 23:02:40 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-ServParams::ServParams(std::string pass, int const port): _password(pass), _port(port), _servfd(-1), _res(NULL), _fdCount(0), _pfds(NULL), _clients(0), _channels(0)
+ServParams::ServParams(std::string pass, int const port): _password(pass), _port(port), _servfd(-1), _res(NULL), _fdCount(0), _pfds(0), _clients(0), _channels(0)
 {}
 
 ServParams::~ServParams()
 {
 	if (_servfd >= 0)
 		close(_servfd);
-	if (_pfds)
-		delete[] _pfds;
+	// if (_pfds)
+	// 	delete[] _pfds;
 }
 
 void ServParams::setPass(std::string &newPass)
@@ -137,28 +137,78 @@ bool ServParams::listenForConn(void) const
 	return (true);
 }
 
+bool ServParams::deleteConnection(int fd)
+{
+	for (std::vector<Channel *>::iterator it=_channels.begin(); it != _channels.end(); it++)
+	{
+		std::vector<Client *> *tmp = (*it)->getMembers();
+		for (std::vector<Client *>::iterator b=tmp->begin(); b != tmp->end(); b++)
+		{
+			if ((*b)->getFd() == fd)
+			{
+				(*b)->setFd(-1);
+				delete(*b);
+				tmp->erase(b);
+				break ;
+			}
+		}
+	}
+
+	// remove from clients vector
+	for (std::vector<Client *>::iterator it=_clients.begin(); it != _clients.end(); it++)
+	{
+		if ((*it)->getFd() == fd)
+		{
+			(*it)->setFd(-1);
+			delete(*it);
+			_clients.erase(it);
+			break ;
+		}
+	}
+	
+	// remove from _pfds
+	for (std::vector<pollfd>::iterator it=_pfds.begin(); it!=_pfds.end(); it++)
+	{
+		if (it->fd == fd)
+		{
+			_pfds.erase(it);
+			break ;
+		}
+	}
+	return (true);
+}
 
 bool ServParams::handleRequest(void)
 {
+	// std::vector<pollfd> pfds;
+	fcntl(_servfd, F_SETFL, O_NONBLOCK);
 	char msg[1024];
 	Parser parser;
 	struct sockaddr_storage client_addr;
 	socklen_t c_len = sizeof(client_addr);
 	int conn;
+	int polled_fds;
+	int data;
+	int i;
 	void *addr;
 	char ip[INET6_ADDRSTRLEN];
-	
-	addNewConn(_servfd);
+
+	// add the server to the pfds vector
+	struct pollfd serv;
+	serv.fd = _servfd;
+	serv.events = POLLIN;
+	serv.revents = 0;
+	_pfds.push_back(serv);
 
 	while (true)
 	{
-		int polled_fds = poll(_pfds, _fdCount, -1);
+		polled_fds = poll(&_pfds[0], _pfds.size(), -1);
 		if ( polled_fds == -1)
 		{
 			std::cerr << "poll: " << strerror(errno) << std::endl;
 			return (EXIT_FAILURE);
 		}
-		for (int i=0; i<_fdCount; i++)
+		for (i=0; i<_pfds.size(); i++)
 		{
 			// is someone ready to read from the created sockets
 			if (_pfds[i].revents & POLLIN)
@@ -177,14 +227,23 @@ bool ServParams::handleRequest(void)
 							addr = &((struct sockaddr_in *)&client_addr)->sin_addr;
 						else
 							addr = &((struct sockaddr_in6 *)&client_addr)->sin6_addr;
-						std::cout << "Received connection from " << inet_ntop(client_addr.ss_family, addr, ip, INET6_ADDRSTRLEN) << " on socket: " << conn << "\r\n";
-						addNewConn(conn);
+						std::cout << "Received connection from " << inet_ntop(client_addr.ss_family, addr, ip, INET6_ADDRSTRLEN) << " on socket: " << conn << "\r" << std::endl;
+						struct pollfd newConnection;
+						newConnection.fd = conn;
+						newConnection.events = POLLIN | POLLOUT;
+						newConnection.revents = 0;
+						_pfds.push_back(newConnection);
+						Client *client = new Client();
+						client->setJoinedTime(std::time(0));
+						client->setFd(conn);
+						_clients.push_back(client);
+						send(conn, (void *)":server ***hello***\r\n", 21, 0);
 					}
 				}
 				else
 				{
 					std::memset(msg, 0, 1024);
-					int data = recv(_pfds[i].fd, msg, 1023, 0);
+					data = recv(_pfds[i].fd, msg, 1023, 0);
 					// here server reads data from the sockets and parses it, 
 					// if syntax is right, performs op on it
 					// else sends proper error message
@@ -192,29 +251,53 @@ bool ServParams::handleRequest(void)
 					{
 						if (data == 0)
 						{
-							std::cout << "bye\r\n";
+							memset(msg, 0, 1024);
+							strcpy(msg, "bye\r\n");
+							send(_pfds[i].fd, msg, sizeof(msg), 0);
+							memset(msg, 0, 1024);
 						}
 						else
 							std::cerr << "recv: " << strerror(errno) << std::endl;
-						removeConn(i);
+						
+						// remove the fd not responding from the _pfds and
+						// remove it from the clients vector and channel vector.
+						deleteConnection(_pfds[i].fd);
+						close(_pfds[i].fd);
+						std::cout << "Lost connection to ::1 on socket " << _pfds[i].fd << std::endl;
 					}
 					else
 					{
+						// Client sends message to the server
+						// Client should have an outGoingBuffer to save data in (when intending to send a message)
+						// Client has 10 sec window to register
+						msg[data] = '\0';
+						std::cout << msg << std::endl;
 						if (!parser.isSpaces(msg))
 						{
 							parser.parseInput(msg, " \t");
 							std::vector<std::string> const &res = parser.getRes();
+							
 							if (!isRegistered(_pfds[i].fd))
 							{
-								registerUser(_pfds[i].fd, res, msg);
-								if (!isRegistered(_pfds[i].fd))
+								if (std::time(0) - _clients[i-1]->getJoinedTime() >= 10)
 								{
-									std::memset(msg, 0, 1024);
-									std::strcpy(msg, "Incorrect password\r\n");
-									send(_pfds[i].fd,msg, sizeof(msg), 0);
-									memset(msg, 0, 1024);
-									removeConn(i);
+									send(_pfds[i].fd, (void *)":timeout\r\n", 10, 0);
+									deleteConnection(_pfds[i].fd);
+									close(_pfds[i].fd);
 								}
+								registerUser(_pfds[i].fd, res, msg);
+								parser.resetRes();
+								// if (!isRegistered(_pfds[i].fd))
+								// {
+								// 	std::memset(msg, 0, 1024);
+								// 	std::strcpy(msg, "Incorrect password\r\n");
+								// 	send(_pfds[i].fd,msg, sizeof(msg), 0);
+								// 	memset(msg, 0, 1024);
+								// 	close(_pfds[i].fd);
+								// 	deleteConnection(_pfds[i].fd);
+								// 	parser.resetRes();
+								// 	continue ;
+								// }
 								// register user
 							}
 						}
@@ -236,76 +319,27 @@ bool ServParams::handleRequest(void)
 					}
 				}
 			}
-			else if (_pfds[i].revents & POLLOUT)
-			{
-				// someone is ready to send data
-			}
+			// else if (i->revents & POLLOUT)
+			// {
+			// 	// someone is ready to send data
+			// }
 		}
 	}
 }
 
-/*
-	** whenever a new connection is made
-	** array gets extended
-*/
-void ServParams::addNewConn(int fd)
-{
-	struct pollfd *tmp = new pollfd[_fdCount + 1];
-
-	for (int i=0; i<_fdCount; i++)
-	{
-		tmp[i].events = _pfds[i].events;
-		tmp[i].fd = _pfds[i].fd;
-		tmp[i].revents = _pfds[i].revents;
-	}
-	if (_pfds)
-		delete[] _pfds;
-	_pfds = tmp;
-	_pfds[_fdCount].fd = fd;
-	_pfds[_fdCount].events = POLLIN;
-	_fdCount++;
-}
-
-/*
-	** whenever a client is disconnected
-	** array gets compressed
-*/
-void ServParams::removeConn(int index)
-{
-	struct pollfd *tmp = new pollfd[_fdCount - 1];
-	int j = 0;
-
-	close(_pfds[index].fd);
-	_pfds[index].fd = -1;
-	for (int i=0; i<_fdCount; i++)
-	{
-		if (_pfds[i].fd != -1)
-		{
-			tmp[j].events = _pfds[i].events;
-			tmp[j].fd = _pfds[i].fd;
-			tmp[j].revents = _pfds[i].revents;
-			j++;
-		}
-	}
-	if (_pfds)
-		delete[] _pfds;
-	_fdCount--;
-	_pfds = tmp;
-}
-
-void ServParams::addClient(Client &client)
+void ServParams::addClient(Client *client)
 {
 	_clients.push_back(client);
 }
 
-static bool isEqual(Client const &client, int fd)
+static bool isEqual(Client const *client, int fd)
 {
-	return (fd == client.getFd());
+	return (fd == client->getFd());
 }
 
-std::vector<Client>::iterator ServParams::findFd(std::vector<Client>& client, int fd)
+std::vector<Client *>::iterator ServParams::findFd(std::vector<Client *>& client, int fd)
 {
-	for (std::vector<Client>::iterator it = client.begin(); it != client.end(); ++it)
+	for (std::vector<Client *>::iterator it = client.begin(); it != client.end(); ++it)
 	{
 		if (isEqual(*it, fd))
 			return it;
@@ -313,19 +347,26 @@ std::vector<Client>::iterator ServParams::findFd(std::vector<Client>& client, in
 	return client.end();
 }
 
-void ServParams::removeClient(Client &client)
+void ServParams::removeClient(Client *client)
 {
-	std::vector<Client>::iterator finder = findFd(_clients, client.getFd());
+	std::vector<Client *>::iterator finder = findFd(_clients, client->getFd());
 	if (finder != _clients.end())
+	{
 		_clients.erase(finder);
+		delete client;
+	}
 }
 
 bool ServParams::isRegistered(int fd)
 {
-	for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+	for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{
 		if (isEqual(*it, fd))
-			return (true);
+		{
+			if ((*it)->getStatus())
+				return (true);
+			break ;
+		}
 	}
 	return (false);
 }
@@ -333,22 +374,25 @@ bool ServParams::isRegistered(int fd)
 bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char const *msg)
 {
 	std::string const &cmd = res.front();
-	if (cmd != "PASS")
+	// if (cmd != "PASS")
+	// {
+	// 	std::cerr << "User hasn't registered\r\n";
+	// 	return (false);
+	// }
+			// std::cout << "inside\n";
+	if (cmd == "NICK" || cmd == "USER" || cmd == "PASS")
 	{
-		std::cerr << "User hasn't registered\r\n";
-		return (false);
-	}
-	if (cmd == "NICK" || cmd == "USER")
-	{
-		if (cmd == "NICK")
+		if (cmd == "PASS")
 		{
-			if (res.size() == 2)
-			{
-				Client client;
-				client.setNick(res[1]);
-				client.setFd(fd);
-				_clients.push_back(client);
-			}
+			if (res.size() != 2 || res[1] != _password)
+				return (false);
+			// if (res.size() == 2)
+			// {
+			// 	Client *client = new Client();
+			// 	client->setNick(res[1]);
+			// 	client->setFd(fd);
+			// 	_clients.push_back(client);
+			// }
 		}
 		// else if (cmd == "USER")
 		// {
