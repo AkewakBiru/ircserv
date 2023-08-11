@@ -6,13 +6,13 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/09 22:49:46 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/11 17:31:46 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _sockfd(-1), _buffer(""), _joinedTime(0)
+Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), _sockfd(-1), _buffer(""), _joinedTime(0)
 {}
 
 Client::~Client()
@@ -41,6 +41,16 @@ std::string const &Client::getNick(void) const
 	return (_nick);
 }
 
+void Client::setUserName(std::string const &user)
+{
+	_userName = user;
+}
+
+std::string const &Client::getUserName() const
+{
+	return (_userName);
+}
+
 void Client::setJoinedTime(unsigned long time)
 {
 	_joinedTime = time;
@@ -59,4 +69,14 @@ void Client::setStatus(bool status)
 bool Client::getStatus() const
 {
 	return (_isRegistered);
+}
+
+void Client::setPassword(bool value)
+{
+	_password = value;
+}
+
+bool Client::hasPassword() const
+{
+	return (_password);
 }

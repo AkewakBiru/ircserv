@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/09 23:02:40 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/11 21:14:29 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,7 +182,7 @@ bool ServParams::handleRequest(void)
 {
 	// std::vector<pollfd> pfds;
 	fcntl(_servfd, F_SETFL, O_NONBLOCK);
-	char msg[1024];
+	char msg[512];
 	Parser parser;
 	struct sockaddr_storage client_addr;
 	socklen_t c_len = sizeof(client_addr);
@@ -218,16 +218,14 @@ bool ServParams::handleRequest(void)
 				{
 					conn = accept(_servfd, (struct sockaddr *)&client_addr, &c_len);
 					if (conn == -1)
-					{
 						std::cerr << "accept: " << strerror(errno) << std::endl;
-					}
 					else
 					{
 						if (((struct sockaddr *)&client_addr)->sa_family == AF_INET)
 							addr = &((struct sockaddr_in *)&client_addr)->sin_addr;
 						else
 							addr = &((struct sockaddr_in6 *)&client_addr)->sin6_addr;
-						std::cout << "Received connection from " << inet_ntop(client_addr.ss_family, addr, ip, INET6_ADDRSTRLEN) << " on socket: " << conn << "\r" << std::endl;
+						std::cout << "Received connection from " << inet_ntop(client_addr.ss_family, addr, ip, INET6_ADDRSTRLEN) << " on socket: " << conn << "\r\n";
 						struct pollfd newConnection;
 						newConnection.fd = conn;
 						newConnection.events = POLLIN | POLLOUT;
@@ -237,32 +235,27 @@ bool ServParams::handleRequest(void)
 						client->setJoinedTime(std::time(0));
 						client->setFd(conn);
 						_clients.push_back(client);
-						send(conn, (void *)":server ***hello***\r\n", 21, 0);
+						// capability request from irssi should have the below response
+						send(conn, (void *)"CAP * ACK multi-prefix\r\n", 24, 0);
 					}
 				}
 				else
 				{
-					std::memset(msg, 0, 1024);
-					data = recv(_pfds[i].fd, msg, 1023, 0);
+					std::memset(msg, 0, 512);
+					data = recv(_pfds[i].fd, msg, 510, 0);
 					// here server reads data from the sockets and parses it, 
 					// if syntax is right, performs op on it
 					// else sends proper error message
 					if (data <= 0)
 					{
 						if (data == 0)
-						{
-							memset(msg, 0, 1024);
-							strcpy(msg, "bye\r\n");
-							send(_pfds[i].fd, msg, sizeof(msg), 0);
-							memset(msg, 0, 1024);
-						}
+							send(_pfds[i].fd, (void *)"bye\r\n", 5, 0);
 						else
 							std::cerr << "recv: " << strerror(errno) << std::endl;
-						
-						// remove the fd not responding from the _pfds and
-						// remove it from the clients vector and channel vector.
-						deleteConnection(_pfds[i].fd);
+
+						// remove the fd not responding from the _pfds, clients and channel vector
 						close(_pfds[i].fd);
+						deleteConnection(_pfds[i].fd);
 						std::cout << "Lost connection to ::1 on socket " << _pfds[i].fd << std::endl;
 					}
 					else
@@ -270,35 +263,29 @@ bool ServParams::handleRequest(void)
 						// Client sends message to the server
 						// Client should have an outGoingBuffer to save data in (when intending to send a message)
 						// Client has 10 sec window to register
-						msg[data] = '\0';
-						std::cout << msg << std::endl;
+						msg[510] = '\r';
+						msg[511] = '\n';
+						std::cout << msg;
 						if (!parser.isSpaces(msg))
 						{
 							parser.parseInput(msg, " \t");
 							std::vector<std::string> const &res = parser.getRes();
-							
+
 							if (!isRegistered(_pfds[i].fd))
 							{
 								if (std::time(0) - _clients[i-1]->getJoinedTime() >= 10)
 								{
 									send(_pfds[i].fd, (void *)":timeout\r\n", 10, 0);
+									close(_pfds[i].fd);
+									deleteConnection(_pfds[i].fd);
+								}
+								if (!registerUser(_pfds[i].fd, res, msg))
+								{
+									send(_pfds[i].fd, (void *)"Incorrect Password\r\n", 20, 0);
 									deleteConnection(_pfds[i].fd);
 									close(_pfds[i].fd);
 								}
-								registerUser(_pfds[i].fd, res, msg);
 								parser.resetRes();
-								// if (!isRegistered(_pfds[i].fd))
-								// {
-								// 	std::memset(msg, 0, 1024);
-								// 	std::strcpy(msg, "Incorrect password\r\n");
-								// 	send(_pfds[i].fd,msg, sizeof(msg), 0);
-								// 	memset(msg, 0, 1024);
-								// 	close(_pfds[i].fd);
-								// 	deleteConnection(_pfds[i].fd);
-								// 	parser.resetRes();
-								// 	continue ;
-								// }
-								// register user
 							}
 						}
 						// if (res.front() == "NICK")
@@ -374,18 +361,19 @@ bool ServParams::isRegistered(int fd)
 bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char const *msg)
 {
 	std::string const &cmd = res.front();
-	// if (cmd != "PASS")
-	// {
-	// 	std::cerr << "User hasn't registered\r\n";
-	// 	return (false);
-	// }
-			// std::cout << "inside\n";
+
+	Client *client = *(findFd(_clients, fd));
+	// if client has a correct password, nick and user, set their status as joined
+	if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)
+		client->setStatus(true);
 	if (cmd == "NICK" || cmd == "USER" || cmd == "PASS")
 	{
 		if (cmd == "PASS")
 		{
-			if (res.size() != 2 || res[1] != _password)
+			if (!client->hasPassword() && (res.size() != 2 || res[1] != _password))
 				return (false);
+			else if (res[1] == _password)
+				client->setPassword(true);
 			// if (res.size() == 2)
 			// {
 			// 	Client *client = new Client();
