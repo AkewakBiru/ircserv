@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/11 21:14:29 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 00:13:09 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,7 +268,7 @@ bool ServParams::handleRequest(void)
 						std::cout << msg;
 						if (!parser.isSpaces(msg))
 						{
-							parser.parseInput(msg, " \t");
+							parser.parseInput(msg);
 							std::vector<std::string> const &res = parser.getRes();
 
 							if (!isRegistered(_pfds[i].fd))
@@ -360,7 +360,9 @@ bool ServParams::isRegistered(int fd)
 
 bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char const *msg)
 {
-	std::string const &cmd = res.front();
+	std::string const &cmd = res[1];
+	// if (res.size() > 1)
+	// 	cmd = res[1];
 
 	Client *client = *(findFd(_clients, fd));
 	// if client has a correct password, nick and user, set their status as joined
@@ -370,9 +372,9 @@ bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char 
 	{
 		if (cmd == "PASS")
 		{
-			if (!client->hasPassword() && (res.size() != 2 || res[1] != _password))
+			if (!client->hasPassword() && (res.size() != 3 || res[2] != _password))
 				return (false);
-			else if (res[1] == _password)
+			else if (res[2] == _password)
 				client->setPassword(true);
 			// if (res.size() == 2)
 			// {

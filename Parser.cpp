@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:26:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/28 18:00:25 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 00:09:04 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,31 +33,46 @@ bool Parser::isSpaces(std::string const &str)
 	return (true);
 }
 
-bool Parser::parseInput(char const *data, std::string const &delim)
+bool Parser::parseInput(char const *data)
 {
-	std::stringstream stream(data);
-	std::string val;
+	if (!data)
+		return (false);
+	std::string tmp = data;
+	std::string params;
+    std::string word;
 
-	while (std::getline(stream, val))
-	{
-		size_t start = 0;
-		size_t end = val.find_first_of(delim);
+	if (findMsgSize(data) > 0)
+		tmp = tmp.substr(0, findMsgSize(data));
+	std::stringstream ss(tmp);
 
-		while (end != std::string::npos)
+    while (ss >> word) {
+		if (_res.size() == 0)
 		{
-			if (end != start)
-				_res.push_back(val.substr(start, end - start));
-			start = end + 1;
-			end = val.find_first_of(delim, start);
+			if (word[0] == '!')
+				_res.push_back(word);
+			else
+				_res.push_back("");
 		}
-
-		if (start < val.length() && !isSpaces(val))
-			_res.push_back(val.substr(start));
-	}
+		if (_res.size() < 2)
+			_res.push_back(word);
+		else
+			params.append(word).append(" ");
+    }
+	params = params.substr(0, params.find_last_of(" "));
+	_res.push_back(params);
 	return (true);
 }
 
 void Parser::resetRes(void)
 {
 	_res.clear();
+}
+
+size_t Parser::findMsgSize(char const *data)
+{
+	if (!data)
+		return (0);
+	if (std::strchr(data, '\n'))
+		return (std::strchr(data, '\n') - data);
+	return (std::strchr(data, '\0') - data);
 }
