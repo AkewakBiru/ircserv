@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/11 17:30:59 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 14:34:38 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,10 @@
 #define CLIENT_HPP
 #include <iostream>
 #include <string>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <netdb.h>
 #include <unistd.h>
 
 class Client
@@ -40,6 +44,9 @@ class Client
 		void setPassword(bool value);
 		bool hasPassword() const;
 
+		void setIpAddr(struct sockaddr_storage *clientAddr);
+		std::string const &getIpAddr() const;
+
 	// msg format: USER username * * :full_name
 	//             NICK nick
 	private:
@@ -52,5 +59,6 @@ class Client
 		std::string _buffer;
 		char _msg[1024];
 		unsigned long _joinedTime;
+		std::string _ipAddr;
 };
 #endif

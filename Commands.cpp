@@ -1,21 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   IrcUtils.hpp                                       :+:      :+:    :+:   */
+/*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/07/29 21:26:35 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 12:53:44 by abiru            ###   ########.fr       */
+/*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
+/*   Updated: 2023/08/12 12:09:01 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef IRCUTILS_HPP
-#define IRCUTILS_HPP
-#include <iostream>
-#include <string>
-#include <cstring>
+#include "Commands.hpp"
 
-bool hasWhiteSpace(std::string const &str);
-std::string toUpper(std::string const &arg, bool flag);
-#endif
+bool PASS(ServParams const &server, Client *client, std::vector<std::string> const &res)
+{
+	if (!client)
+		return (false);
+	if (!client->hasPassword() && (res.size() != 3 || res[2] != server.getPass()))
+		return (false);
+	else if (res[2] == server.getPass())
+		client->setPassword(true);
+	return (true);
+}

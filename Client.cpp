@@ -6,13 +6,13 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/11 17:31:46 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 14:35:14 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), _sockfd(-1), _buffer(""), _joinedTime(0)
+Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), _sockfd(-1), _buffer(""), _joinedTime(0), _ipAddr("")
 {}
 
 Client::~Client()
@@ -79,4 +79,22 @@ void Client::setPassword(bool value)
 bool Client::hasPassword() const
 {
 	return (_password);
+}
+
+void Client::setIpAddr(struct sockaddr_storage *clientAddr)
+{
+	void *addr;
+	char ip[INET6_ADDRSTRLEN];
+
+	if (((struct sockaddr *)clientAddr)->sa_family == AF_INET)
+		addr = &((struct sockaddr_in *)clientAddr)->sin_addr;
+	else
+		addr = &((struct sockaddr_in6 *)clientAddr)->sin6_addr;
+	_ipAddr = inet_ntop(clientAddr->ss_family, addr, ip, INET6_ADDRSTRLEN);
+	// std::cout << "Received connection from " << inet_ntop(clientAddr->ss_family, addr, ip, INET6_ADDRSTRLEN) << " on socket: " << _sockfd << "\r\n";
+}
+
+std::string const &Client::getIpAddr() const
+{
+	return (_ipAddr);
 }

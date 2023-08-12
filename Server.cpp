@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 00:13:09 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 15:21:47 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,7 @@ bool ServParams::deleteConnection(int fd)
 	{
 		if (it->fd == fd)
 		{
+			it->fd = -1;
 			_pfds.erase(it);
 			break ;
 		}
@@ -178,9 +179,20 @@ bool ServParams::deleteConnection(int fd)
 	return (true);
 }
 
+/*
+	** 
+*/
+bool ServParams::sendMsgAndCloseConnection(std::string const &msg, size_t index)
+{
+	std::cout << "Lost connection to " << _clients[index-1]->getIpAddr() << " on socket " << _pfds[index].fd << std::endl;
+	send(_pfds[index].fd, msg.c_str(), msg.length(), 0);
+	close(_pfds[index].fd);
+	deleteConnection(_pfds[index].fd);
+	return (true);
+}
+
 bool ServParams::handleRequest(void)
 {
-	// std::vector<pollfd> pfds;
 	fcntl(_servfd, F_SETFL, O_NONBLOCK);
 	char msg[512];
 	Parser parser;
@@ -189,9 +201,7 @@ bool ServParams::handleRequest(void)
 	int conn;
 	int polled_fds;
 	int data;
-	int i;
-	void *addr;
-	char ip[INET6_ADDRSTRLEN];
+	size_t i;
 
 	// add the server to the pfds vector
 	struct pollfd serv;
@@ -221,17 +231,14 @@ bool ServParams::handleRequest(void)
 						std::cerr << "accept: " << strerror(errno) << std::endl;
 					else
 					{
-						if (((struct sockaddr *)&client_addr)->sa_family == AF_INET)
-							addr = &((struct sockaddr_in *)&client_addr)->sin_addr;
-						else
-							addr = &((struct sockaddr_in6 *)&client_addr)->sin6_addr;
-						std::cout << "Received connection from " << inet_ntop(client_addr.ss_family, addr, ip, INET6_ADDRSTRLEN) << " on socket: " << conn << "\r\n";
 						struct pollfd newConnection;
 						newConnection.fd = conn;
 						newConnection.events = POLLIN | POLLOUT;
 						newConnection.revents = 0;
 						_pfds.push_back(newConnection);
 						Client *client = new Client();
+						client->setIpAddr(&client_addr);
+						std::cout << "Received connection from " << client->getIpAddr() << " on socket: " << conn << "\r\n";
 						client->setJoinedTime(std::time(0));
 						client->setFd(conn);
 						_clients.push_back(client);
@@ -254,15 +261,15 @@ bool ServParams::handleRequest(void)
 							std::cerr << "recv: " << strerror(errno) << std::endl;
 
 						// remove the fd not responding from the _pfds, clients and channel vector
+						std::cout << "Lost connection to " << _clients[i-1]->getIpAddr() << " on socket " << _pfds[i].fd << std::endl;
 						close(_pfds[i].fd);
 						deleteConnection(_pfds[i].fd);
-						std::cout << "Lost connection to ::1 on socket " << _pfds[i].fd << std::endl;
 					}
 					else
 					{
 						// Client sends message to the server
 						// Client should have an outGoingBuffer to save data in (when intending to send a message)
-						// Client has 10 sec window to register
+						// Client has 60 sec window to register
 						msg[510] = '\r';
 						msg[511] = '\n';
 						std::cout << msg;
@@ -273,36 +280,19 @@ bool ServParams::handleRequest(void)
 
 							if (!isRegistered(_pfds[i].fd))
 							{
-								if (std::time(0) - _clients[i-1]->getJoinedTime() >= 10)
+								if (std::time(0) - _clients[i-1]->getJoinedTime() >= 60)
 								{
-									send(_pfds[i].fd, (void *)":timeout\r\n", 10, 0);
-									close(_pfds[i].fd);
-									deleteConnection(_pfds[i].fd);
+									std::string partingMsg = "ERROR :Closing Link: nick[";
+									partingMsg.append(_clients[i-1]->getIpAddr()).append("] (Registration Timeout)\r\n");
+									sendMsgAndCloseConnection(partingMsg, i);
 								}
 								if (!registerUser(_pfds[i].fd, res, msg))
-								{
-									send(_pfds[i].fd, (void *)"Incorrect Password\r\n", 20, 0);
-									deleteConnection(_pfds[i].fd);
-									close(_pfds[i].fd);
-								}
+									sendMsgAndCloseConnection("Incorrect Password\r\n", i);
 								parser.resetRes();
 							}
 						}
-						// if (res.front() == "NICK")
-						// {
-						// 	if (res.size() == 2)
-						// 		std::cout << "user wants to register\r\n";
-						// }
-						// for (std::vector<std::string>::const_iterator i=res.begin(); i!= res.end(); ++i)
-						// {
-						// 	std::cout << "[" << *i << "]\t";
-						// }
-						// std::cout << '\n';
 						parser.resetRes();
 						memset(msg, 0, sizeof(msg));
-						// strcpy(msg, "received\r\n");
-						// send(pfds[i].fd, msg, sizeof(msg), 0);
-						// memset(msg, 0, sizeof(msg));
 					}
 				}
 			}
@@ -360,9 +350,7 @@ bool ServParams::isRegistered(int fd)
 
 bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char const *msg)
 {
-	std::string const &cmd = res[1];
-	// if (res.size() > 1)
-	// 	cmd = res[1];
+	std::string const &cmd = toUpper(res[1], false);
 
 	Client *client = *(findFd(_clients, fd));
 	// if client has a correct password, nick and user, set their status as joined
@@ -372,25 +360,10 @@ bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char 
 	{
 		if (cmd == "PASS")
 		{
-			if (!client->hasPassword() && (res.size() != 3 || res[2] != _password))
+			if (!PASS(*this, client, res))
 				return (false);
-			else if (res[2] == _password)
-				client->setPassword(true);
-			// if (res.size() == 2)
-			// {
-			// 	Client *client = new Client();
-			// 	client->setNick(res[1]);
-			// 	client->setFd(fd);
-			// 	_clients.push_back(client);
-			// }
 		}
-		// else if (cmd == "USER")
-		// {
-		// 	if (res.size() >= 5)
-		// 	{
-				
-		// 	}
-		// }
+		// else if (toUpper(cmd, false) == "NICK" && client->hasPassword())
 	}
 	return (true);
 }

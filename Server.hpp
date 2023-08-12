@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/08 21:01:19 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 15:09:03 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "IrcUtils.hpp"
+#include "Commands.hpp"
 
 class ServParams
 {
@@ -48,9 +49,6 @@ class ServParams
 		bool listenForConn(void) const;
 		bool handleRequest(void);
 
-		void addNewConn(int fd);
-		void removeConn(int index);
-
 		bool deleteConnection(int fd);
 
 		void addClient(Client *client);
@@ -58,6 +56,8 @@ class ServParams
 		bool isRegistered(int fd);
 		bool registerUser(int fd, std::vector<std::string> const &res, char const *msg);
 		std::vector<Client *>::iterator findFd(std::vector<Client *>& client, int fd);
+
+		bool sendMsgAndCloseConnection(std::string const &msg, size_t index);
 
 	private:
 		std::string _password;
