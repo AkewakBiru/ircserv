@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 22:09:07 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 00:51:32 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -326,6 +326,19 @@ std::vector<Client *>::iterator ServParams::findFd(std::vector<Client *>& client
 	return client.end();
 }
 
+/*
+	
+*/
+ssize_t ServParams::getNicksFd(std::string nick)
+{
+	for (std::vector<Client *>::iterator it = _clients.begin(); it!=_clients.end(); it++)
+	{
+		if ((*it)->getNick() == nick)
+			return ((*it)->getFd());
+	}
+	return (-1);
+}
+
 void ServParams::removeClient(Client *client)
 {
 	std::vector<Client *>::iterator finder = findFd(_clients, client->getFd());
@@ -355,6 +368,7 @@ bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char 
 	std::string const &cmd = toUpper(res[1], false);
 
 	Client *client = *(findFd(_clients, fd));
+
 	// if client has a correct password, nick and user, set their status as joined
 	if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)
 		client->setStatus(true);
@@ -362,23 +376,33 @@ bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char 
 	{
 		if (cmd == "PASS")
 		{
-			if (res.size() <= 2 || (res.size() == 3 && res[2] == ""))
+			try
 			{
-				throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+				PASS(*this, client, res);
 			}
-			// if client is registered, return already registered message
-			if (!PASS(*this, client, res))
-				throw std::runtime_error(genErrMsg(ERR_ALREADYREGISTRED, client->getNick(), "", ERR_ALREADYREGISTRED_DESC));
+			catch (std::exception const &e)
+			{
+				(void)e;
+				throw ;
+			}
 		}
 		else if (cmd == "NICK")
 		{
-			if (res.size() == 3 && res[2] == "")
-				throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
-			// if (!NICK(*this, client, res))
-				// throw std::invalid
+			try
+			{
+				NICK(*this, client, res);
+			}
+			catch (std::exception const &e)
+			{
+				(void)e;
+				throw ;
+			}
+			// if (res.size() == 3 && res[2] == "")
+			// 	throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
 		}
-		// else if (toUpper(cmd, false) == "NICK" && client->hasPassword())
 	}
+	else
+		throw std::invalid_argument(genErrMsg(ERR_NOTREGISTERED, "*", "", ERR_NOTREGISTERED_DESC));
 	if (client->getUserName().length() > 0 && client->getNick().length() > 0 && !client->hasPassword())
 	{
 		throw std::runtime_error(genServErrMsg(client->getNick(), client->getIpAddr(), "You are not authorized to connect to this server"));

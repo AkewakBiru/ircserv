@@ -10,6 +10,22 @@ bool hasWhiteSpace(std::string const &str)
 	return (false);
 }
 
+/*
+	** illegal chars -> A digit at 0 index
+	** 
+*/
+bool hasIllegalChars(std::string const &arg)
+{
+	if (arg.length() > 0 && (std::isdigit(arg[0]) || arg[0] == '-'))
+		return (true);
+	for (size_t i=0; i<arg.length(); i++)
+	{
+		if ((arg[i] < 'A' || arg[i] > 125) && arg[i] != '-')
+			return (true);
+	}
+	return (false);
+}
+
 std::string toUpper(std::string const &arg, bool flag)
 {
 	std::string newStr(arg);
@@ -37,7 +53,12 @@ std::string toUpper(std::string const &arg, bool flag)
 std::string genErrMsg(char const *errCode, std::string optional, std::string cmd, std::string desc)
 {
 	std::string error = ":ircserv ";
-	error.append(errCode).append(" ").append(optional).append(" ").append(cmd).append(" ").append(desc).append("\r\n");
+	error.append(errCode).append(" ");
+	if (optional.length() > 0)
+		error.append(optional).append(" ");
+	if (cmd.length() > 0)
+		error.append(cmd).append(" ");
+	error.append(desc).append("\r\n");
 	return (error);
 }
 

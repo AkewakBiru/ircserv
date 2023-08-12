@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:57:37 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 20:50:39 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 23:44:35 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,4 +31,7 @@
 #define ERR_TOOLONGNICKNAME ":Nickname is too long"
 #define ERR_NICKNAMEINUSE "433"
 #define ERR_NICKNAMEINUSE_DESC ":Nickname is already in use"
+#define ERR_NOTREGISTERED "451"
+#define ERR_NOTREGISTERED_DESC ":You have not registered"
+
 #endif

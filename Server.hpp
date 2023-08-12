@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 18:29:32 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 00:51:40 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ class ServParams
 		bool isRegistered(int fd);
 		bool registerUser(int fd, std::vector<std::string> const &res, char const *msg);
 		std::vector<Client *>::iterator findFd(std::vector<Client *>& client, int fd);
+		ssize_t getNicksFd(std::string nick);
 
 		bool sendMsgAndCloseConnection(std::string const &msg, size_t index);
 

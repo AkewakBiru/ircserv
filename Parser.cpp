@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:26:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 22:08:52 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 23:31:34 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,10 @@ bool Parser::isSpaces(std::string const &str)
 
 bool Parser::parseInput(std::string arg)
 {
-		int i = 0, start = 0, end=0;
-	// std::vector<std::string> _res(0);
+	int i = 0, start = 0, end=0;
+
+	if (findMsgSize(arg.c_str()) > 0)
+		arg = arg.substr(0, findMsgSize(arg.c_str()));
 	while (start < arg.length())
 	{
 		while (arg[start] == ' ')
