@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/29 21:26:35 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 12:53:44 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 18:56:09 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,4 +18,7 @@
 
 bool hasWhiteSpace(std::string const &str);
 std::string toUpper(std::string const &arg, bool flag);
+	// structure of the string -> ":ircserv " + err_code + optional_param + cmd + ERR_DESCRIPTION + "\r\n"
+std::string genErrMsg(char const *errCode, std::string optional, std::string cmd, std::string desc);
+std::string genServErrMsg(std::string nick, std::string ip, std::string desc);
 #endif

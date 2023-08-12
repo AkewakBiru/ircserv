@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:26:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 00:09:04 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 22:08:52 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,35 +33,81 @@ bool Parser::isSpaces(std::string const &str)
 	return (true);
 }
 
-bool Parser::parseInput(char const *data)
+bool Parser::parseInput(std::string arg)
 {
-	if (!data)
-		return (false);
-	std::string tmp = data;
-	std::string params;
-    std::string word;
-
-	if (findMsgSize(data) > 0)
-		tmp = tmp.substr(0, findMsgSize(data));
-	std::stringstream ss(tmp);
-
-    while (ss >> word) {
+		int i = 0, start = 0, end=0;
+	// std::vector<std::string> _res(0);
+	while (start < arg.length())
+	{
+		while (arg[start] == ' ')
+			start++;
 		if (_res.size() == 0)
 		{
-			if (word[0] == '!')
-				_res.push_back(word);
+			if (arg[start] == '!')
+			{
+				end = arg.find_first_of(" ", start);
+				if (end == start)
+				{
+					start++;
+					continue ;
+				}
+				if (end == std::string::npos)
+				{
+					_res.push_back(arg.substr(start, arg.length() - start));
+					break ;
+				}
+			}
 			else
 				_res.push_back("");
 		}
-		if (_res.size() < 2)
-			_res.push_back(word);
-		else
-			params.append(word).append(" ");
-    }
-	params = params.substr(0, params.find_last_of(" "));
-	_res.push_back(params);
+		end = arg.find_first_of(" ", start);
+		if (end == start)
+		{
+			start++;
+			continue ;
+		}
+		if (end == std::string::npos)
+		{
+			_res.push_back(arg.substr(start, arg.length() - start));
+			break ;
+		}
+		_res.push_back(arg.substr(start, end - start));
+		while (arg[end] == ' ')
+			end++;
+		start = end;
+	}
 	return (true);
 }
+
+// bool Parser::parseInput(char const *data)
+// {
+// 	if (!data)
+// 		return (false);
+// 	std::string tmp = data;
+// 	std::string params;
+//     std::string word;
+
+// 	if (findMsgSize(data) > 0)
+// 		tmp = tmp.substr(0, findMsgSize(data));
+// 	std::stringstream ss(tmp);
+
+//     while (ss >> word) {
+// 		if (_res.size() == 0)
+// 		{
+// 			if (word[0] == '!')
+// 				_res.push_back(word);
+// 			else
+// 				_res.push_back("");
+// 		}
+// 		if (_res.size() < 2)
+// 			_res.push_back(word);
+// 		else
+// 			params.append(word).append(" ");
+//     }
+// 	params = params.substr(0, params.find_last_of(" "));
+// 	_res.push_back(params);
+// 	return (true);
+// }
 
 void Parser::resetRes(void)
 {

@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 15:09:03 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 18:29:32 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@
 #include "Channel.hpp"
 #include "IrcUtils.hpp"
 #include "Commands.hpp"
+#include "responseCodes.hpp"
 
 class ServParams
 {

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "responseCodes.hpp"
 #include "Client.hpp"
 #include "Server.hpp"
 #include "Parser.hpp"

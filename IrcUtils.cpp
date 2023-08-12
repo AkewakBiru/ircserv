@@ -33,3 +33,17 @@ std::string toUpper(std::string const &arg, bool flag)
 	}
 	return (newStr);
 }
+
+std::string genErrMsg(char const *errCode, std::string optional, std::string cmd, std::string desc)
+{
+	std::string error = ":ircserv ";
+	error.append(errCode).append(" ").append(optional).append(" ").append(cmd).append(" ").append(desc).append("\r\n");
+	return (error);
+}
+
+std::string genServErrMsg(std::string nick, std::string ip, std::string desc)
+{
+	std::string error = "ERROR :Closing Link: ";
+	error.append(nick).append("[").append(ip).append("]").append(" (").append(desc).append(")\r\n");
+	return (error);
+}

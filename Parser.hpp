@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:24:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 00:01:22 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 22:08:58 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class Parser
 		std::vector<std::string>const &getRes(void) const;
 		void resetRes(void);
 		bool isSpaces(std::string const &str);
-		bool parseInput(char const *data);
+		bool parseInput(std::string data);
 		size_t findMsgSize(char const *data);
 
 	private:

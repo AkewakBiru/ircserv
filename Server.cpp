@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 15:21:47 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/12 22:09:07 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -259,7 +259,6 @@ bool ServParams::handleRequest(void)
 							send(_pfds[i].fd, (void *)"bye\r\n", 5, 0);
 						else
 							std::cerr << "recv: " << strerror(errno) << std::endl;
-
 						// remove the fd not responding from the _pfds, clients and channel vector
 						std::cout << "Lost connection to " << _clients[i-1]->getIpAddr() << " on socket " << _pfds[i].fd << std::endl;
 						close(_pfds[i].fd);
@@ -281,13 +280,16 @@ bool ServParams::handleRequest(void)
 							if (!isRegistered(_pfds[i].fd))
 							{
 								if (std::time(0) - _clients[i-1]->getJoinedTime() >= 60)
+									sendMsgAndCloseConnection(genServErrMsg("", _clients[i-1]->getIpAddr(), "Registration Timeout"), i);
+								try
 								{
-									std::string partingMsg = "ERROR :Closing Link: nick[";
-									partingMsg.append(_clients[i-1]->getIpAddr()).append("] (Registration Timeout)\r\n");
-									sendMsgAndCloseConnection(partingMsg, i);
+									registerUser(_pfds[i].fd, res, msg);
 								}
-								if (!registerUser(_pfds[i].fd, res, msg))
-									sendMsgAndCloseConnection("Incorrect Password\r\n", i);
+								catch(const std::exception& e)
+								{
+									std::string tmp = e.what();
+									send(_pfds[i].fd, tmp.c_str(), tmp.length(), 0);
+								}
 								parser.resetRes();
 							}
 						}
@@ -360,10 +362,26 @@ bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char 
 	{
 		if (cmd == "PASS")
 		{
+			if (res.size() <= 2 || (res.size() == 3 && res[2] == ""))
+			{
+				throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+			}
+			// if client is registered, return already registered message
 			if (!PASS(*this, client, res))
-				return (false);
+				throw std::runtime_error(genErrMsg(ERR_ALREADYREGISTRED, client->getNick(), "", ERR_ALREADYREGISTRED_DESC));
+		}
+		else if (cmd == "NICK")
+		{
+			if (res.size() == 3 && res[2] == "")
+				throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+			// if (!NICK(*this, client, res))
+				// throw std::invalid
 		}
 		// else if (toUpper(cmd, false) == "NICK" && client->hasPassword())
+	}
+	if (client->getUserName().length() > 0 && client->getNick().length() > 0 && !client->hasPassword())
+	{
+		throw std::runtime_error(genServErrMsg(client->getNick(), client->getIpAddr(), "You are not authorized to connect to this server"));
 	}
 	return (true);
 }
