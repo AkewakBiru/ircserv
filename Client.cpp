@@ -6,13 +6,13 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 12:38:32 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 14:45:31 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), _sockfd(-1), _buffer(""), _joinedTime(0), _ipAddr("")
+Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), _sockfd(-1), _msgBuffer(""), _outGoingBuffer(""), _joinedTime(0), _ipAddr("")
 {}
 
 Client::~Client()
@@ -89,6 +89,15 @@ void Client::setPassword(bool value)
 bool Client::hasPassword() const
 {
 	return (_password);
+}
+
+void Client::setMsgBuffer(std::string msg)
+{
+	_msgBuffer = msg;
+}
+std::string Client::getMsgBuffer() const
+{
+	return (_msgBuffer);
 }
 
 void Client::setIpAddr(struct sockaddr_storage *clientAddr)

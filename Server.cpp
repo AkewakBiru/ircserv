@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 13:17:52 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 15:51:49 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,14 +271,17 @@ bool ServParams::handleRequest(void)
 						// Client has 60 sec window to register
 						msg[510] = '\r';
 						msg[511] = '\n';
-						std::cout << msg;
-						if (!parser.isSpaces(msg))
+						
+						_clients[i - 1]->setMsgBuffer(_clients[i - 1]->getMsgBuffer().append(msg));
+						if (msg[std::strlen(msg) - 1] != '\n')
+							continue ;
+						if (!parser.isSpaces(_clients[i - 1]->getMsgBuffer()))
 						{
 							// if (hasIllegalChars(msg))
 							// {
 							// 	std::string err = genErrMsg(ERR)
 							// }
-							parser.parseInput(msg);
+							parser.parseInput(_clients[i - 1]->getMsgBuffer());
 							std::vector<std::string> const &res = parser.getRes();
 
 							if (!isRegistered(_pfds[i].fd))
@@ -294,13 +297,13 @@ bool ServParams::handleRequest(void)
 									std::string tmp = e.what();
 									send(_pfds[i].fd, tmp.c_str(), tmp.length(), 0);
 								}
-								parser.resetRes();
 							}
 							else
 							{
 								// this is where you write the user part and channel part, shatha, youssef
 							}
 						}
+						_clients[i - 1]->setMsgBuffer("");
 						parser.resetRes();
 						memset(msg, 0, sizeof(msg));
 					}
