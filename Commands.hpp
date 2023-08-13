@@ -10,6 +10,7 @@
 
 class ServParams;
 
-bool NICK(ServParams &server, Client *client, std::vector<std::string> const &res);
+void NICK(ServParams &server, Client *client, std::vector<std::string> const &res);
 bool PASS(ServParams const &server, Client *client, std::vector<std::string> const &res);
+void USER(ServParams const &server, Client *client, std::vector<std::string> const &res);
 #endif

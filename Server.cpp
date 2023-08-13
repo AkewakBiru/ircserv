@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 00:51:32 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 13:17:52 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -274,6 +274,10 @@ bool ServParams::handleRequest(void)
 						std::cout << msg;
 						if (!parser.isSpaces(msg))
 						{
+							// if (hasIllegalChars(msg))
+							// {
+							// 	std::string err = genErrMsg(ERR)
+							// }
 							parser.parseInput(msg);
 							std::vector<std::string> const &res = parser.getRes();
 
@@ -283,7 +287,7 @@ bool ServParams::handleRequest(void)
 									sendMsgAndCloseConnection(genServErrMsg("", _clients[i-1]->getIpAddr(), "Registration Timeout"), i);
 								try
 								{
-									registerUser(_pfds[i].fd, res, msg);
+									registerUser(_pfds[i].fd, res, msg, i);
 								}
 								catch(const std::exception& e)
 								{
@@ -291,6 +295,10 @@ bool ServParams::handleRequest(void)
 									send(_pfds[i].fd, tmp.c_str(), tmp.length(), 0);
 								}
 								parser.resetRes();
+							}
+							else
+							{
+								// this is where you write the user part and channel part, shatha, youssef
 							}
 						}
 						parser.resetRes();
@@ -363,22 +371,30 @@ bool ServParams::isRegistered(int fd)
 	return (false);
 }
 
-bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char const *msg)
+bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char const *msg, size_t index)
 {
 	std::string const &cmd = toUpper(res[1], false);
-
 	Client *client = *(findFd(_clients, fd));
 
 	// if client has a correct password, nick and user, set their status as joined
 	if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)
 		client->setStatus(true);
+	if (!client->hasPassword() && cmd != "PASS")
+	{
+		sendMsgAndCloseConnection(genServErrMsg("Password required. ", client->getIpAddr(), ERR_CMD_NOT_PASSWORD), index);
+		return (true);
+	}
 	if (cmd == "NICK" || cmd == "USER" || cmd == "PASS")
 	{
 		if (cmd == "PASS")
 		{
 			try
 			{
-				PASS(*this, client, res);
+				if (!PASS(*this, client, res))
+				{
+					sendMsgAndCloseConnection(genServErrMsg(ERR_INCORRECT_PASSWORD, client->getIpAddr(), ERR_UNAUTHORIZED_ACCESS), index);
+					return (true);
+				}
 			}
 			catch (std::exception const &e)
 			{
@@ -397,15 +413,25 @@ bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char 
 				(void)e;
 				throw ;
 			}
-			// if (res.size() == 3 && res[2] == "")
-			// 	throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+		}
+		else if (cmd == "USER")
+		{
+			try
+			{
+				USER(*this, client, res);
+			} catch (std::exception const &e)
+			{
+				(void)e;
+				throw ;
+			}
 		}
 	}
 	else
 		throw std::invalid_argument(genErrMsg(ERR_NOTREGISTERED, "*", "", ERR_NOTREGISTERED_DESC));
-	if (client->getUserName().length() > 0 && client->getNick().length() > 0 && !client->hasPassword())
+	if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)
 	{
-		throw std::runtime_error(genServErrMsg(client->getNick(), client->getIpAddr(), "You are not authorized to connect to this server"));
+		send(client->getFd(), (void *)"WElcome\r\n", 9, 0);
+		client->setStatus(true);
 	}
 	return (true);
 }

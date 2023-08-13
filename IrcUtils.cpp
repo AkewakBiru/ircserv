@@ -26,6 +26,20 @@ bool hasIllegalChars(std::string const &arg)
 	return (false);
 }
 
+bool userIllegalChars(std::string const &arg)
+{
+	const char *options = "\0\r\n@ ";
+	for (size_t i=0; i<arg.length(); i++)
+	{
+		for (uint8_t j=0; j<5; j++)
+		{
+			if (arg[i] == options[j])
+				return (true);
+		}
+	}
+	return (false);
+}
+
 std::string toUpper(std::string const &arg, bool flag)
 {
 	std::string newStr(arg);

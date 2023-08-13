@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:57:37 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 23:44:35 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 13:12:19 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,5 +33,10 @@
 #define ERR_NICKNAMEINUSE_DESC ":Nickname is already in use"
 #define ERR_NOTREGISTERED "451"
 #define ERR_NOTREGISTERED_DESC ":You have not registered"
-
+#define ERR_UNKNOWNCOMMAND "421"
+#define ERR_UNKNOWNCOMMAND_DESC ":Unknown command"
+#define ERR_UNKNOWNCOMMAND_ILLEGAL ":Illegal characters in message"
+#define ERR_UNAUTHORIZED_ACCESS "You are not authorized to connect to this server"
+#define ERR_INCORRECT_PASSWORD "Incorrect password! "
+#define ERR_CMD_NOT_PASSWORD "Please send your password as the first message."
 #endif

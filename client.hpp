@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 14:34:38 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 12:36:52 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,13 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include <unistd.h>
+
+// enum MODES
+// {
+// 	AWAY,
+// 	INVISIBLE,
+// 	WALLOPS,
+// };
 
 class Client
 {
@@ -34,6 +41,9 @@ class Client
 		
 		void setUserName(std::string const &user);
 		std::string const &getUserName() const;
+
+		void setFullName(std::string const &fullName);
+		std::string const &getFullName() const;
 
 		void setJoinedTime(unsigned long time);
 		unsigned long getJoinedTime() const;

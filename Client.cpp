@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 14:35:14 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 12:38:32 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,16 @@ std::string const &Client::getUserName() const
 	return (_userName);
 }
 
+void Client::setFullName(std::string const &fullName)
+{
+	_fullName = fullName;
+}
+
+std::string const &Client::getFullName() const
+{
+	return (_fullName);
+}
+		
 void Client::setJoinedTime(unsigned long time)
 {
 	_joinedTime = time;
