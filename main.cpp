@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 19:54:40 by abiru             #+#    #+#             */
-/*   Updated: 2023/07/29 16:10:54 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 20:11:30 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ int main(int ac, char **av)
 		return (EXIT_FAILURE);
 	}
 
+	servParams.setServCreationTime();
 	if (!servParams.getServAddrInfo())
 		return (EXIT_FAILURE);
 

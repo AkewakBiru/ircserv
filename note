@@ -1,0 +1,14 @@
+# messages can have a maximum of 512 character of which the 511th and 12th are CRLF(\r\n)
+
+/// responseCodes header -> Add preprocessor constants for wrong command alert (just like the ones i defined) (for the commands you are implementing)
+
+/// parser -> returns a vector which has at least 2 items in it {"ignore the 1st item", "cmd", "params"} (line 310, server.cpp, use the var)
+				use it for checking if the command you are implementing has correct params.
+
+/// client -> when doing privmsg command -> put the message that is intended to be sent inside the outGoingBuffer var and put the destination inside the _dest var.
+
+/// Utils -> any utility function you create, add it to the IrcUtils.cpp/hpp
+
+/// Commands -> add the command functions inside Commands.hpp/cpp
+
+/// server has -> client * vector (i deal with this part), channel * vector (when a new channel is created, allocate dynamically)

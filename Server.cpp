@@ -6,13 +6,13 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 15:51:49 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 21:04:26 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-ServParams::ServParams(std::string pass, int const port): _password(pass), _port(port), _servfd(-1), _res(NULL), _fdCount(0), _pfds(0), _clients(0), _channels(0)
+ServParams::ServParams(std::string pass, int const port): _creationTime(""), _password(pass), _port(port), _servfd(-1), _res(NULL), _fdCount(0), _pfds(0), _clients(0), _channels(0)
 {}
 
 ServParams::~ServParams()
@@ -21,6 +21,31 @@ ServParams::~ServParams()
 		close(_servfd);
 	// if (_pfds)
 	// 	delete[] _pfds;
+}
+
+void ServParams::setServCreationTime()
+{
+	std::stringstream strTime;
+	time_t now = time(0);
+	std::tm* d_t = std::localtime(&now);
+	char dayFormat[] = "%A";
+    char dayString[20];
+	char monthFormat[] = "%B";
+    char monthString[20];
+
+    std::strftime(dayString, sizeof(dayString), dayFormat, d_t);
+    std::strftime(monthString, sizeof(monthString), monthFormat, d_t);
+
+	strTime << dayString << " " << monthString << " " << std::setw(2) << std::setfill('0') \
+	<< d_t->tm_mday << " " << d_t->tm_year + 1900 << " at " << std::setw(2) << std::setfill('0') \
+	<< d_t->tm_hour << ":" << std::setw(2) << std::setfill('0') << d_t->tm_min << ":" << std::setw(2) \
+	<< std::setfill('0') << d_t->tm_sec;
+	_creationTime = strTime.str();
+}
+
+std::string &ServParams::getServCreationTime()
+{
+	return (_creationTime);
 }
 
 void ServParams::setPass(std::string &newPass)
@@ -305,14 +330,20 @@ bool ServParams::handleRequest(void)
 						}
 						_clients[i - 1]->setMsgBuffer("");
 						parser.resetRes();
-						memset(msg, 0, sizeof(msg));
+						std::memset(msg, 0, sizeof(msg));
 					}
 				}
 			}
-			// else if (i->revents & POLLOUT)
-			// {
-			// 	// someone is ready to send data
-			// }
+			else if (_pfds[i].revents & POLLOUT && _pfds[i].fd != _servfd)
+			{
+				if (_clients[i - 1]->getOutgoingMsgBuffer().length() > 0)
+					// if dest is nick
+					// send to the client
+					// if it is a channel
+					// send to all members in the channel
+					std::cout << "can send data\n";
+					// after data is sent reset outgoingMsgBuffer
+			}
 		}
 	}
 }
@@ -422,7 +453,8 @@ bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char 
 			try
 			{
 				USER(*this, client, res);
-			} catch (std::exception const &e)
+			}
+			catch (std::exception const &e)
 			{
 				(void)e;
 				throw ;
@@ -433,8 +465,19 @@ bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char 
 		throw std::invalid_argument(genErrMsg(ERR_NOTREGISTERED, "*", "", ERR_NOTREGISTERED_DESC));
 	if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)
 	{
-		send(client->getFd(), (void *)"WElcome\r\n", 9, 0);
 		client->setStatus(true);
+		sendWelcomingMsg(client);
 	}
 	return (true);
+}
+
+void ServParams::sendWelcomingMsg(Client *client)
+{
+	std::string msg = "";
+
+	msg.append(":ircserv ").append(RPL_WELCOME).append(" :Welcome to the Internet Relay Network ").append(client->getNick()).append("!").append(client->getUserName()).append("@").append(client->getIpAddr()).append("\n");
+	msg.append(":ircserv ").append(RPL_YOURHOST).append(" :Your host is ircserv, running version 10.0\n");
+	msg.append(":ircserv ").append(RPL_CREATED).append(" :This server was created ").append(_creationTime).append("\n");
+	msg.append(":ircserv ").append(RPL_MYINFO).append(" :ircserv 10.0\r\n");
+	send(client->getFd(), msg.c_str(), msg.length(), 0);
 }

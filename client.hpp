@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 14:45:24 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 20:49:43 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,13 @@ class Client
 		bool hasPassword() const;
 		
 		void setMsgBuffer(std::string msg);
-		std::string getMsgBuffer() const;
+		std::string &getMsgBuffer();
+
+		void setOutgoingMsgBuffer(std::string msg);
+		std::string &getOutgoingMsgBuffer();
+
+		void setMsgDest(std::string dest);
+		std::string &getMsgDest();
 
 		void setIpAddr(struct sockaddr_storage *clientAddr);
 		std::string const &getIpAddr() const;
@@ -71,6 +77,7 @@ class Client
 		int	_sockfd;
 		std::string _msgBuffer;
 		std::string _outGoingBuffer;
+		std::string _dest;
 		char _msg[1024];
 		unsigned long _joinedTime;
 		std::string _ipAddr;

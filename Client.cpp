@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 14:45:31 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 20:51:02 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,9 +95,29 @@ void Client::setMsgBuffer(std::string msg)
 {
 	_msgBuffer = msg;
 }
-std::string Client::getMsgBuffer() const
+std::string &Client::getMsgBuffer()
 {
 	return (_msgBuffer);
+}
+
+void Client::setOutgoingMsgBuffer(std::string msg)
+{
+	_outGoingBuffer = msg;
+}
+
+std::string &Client::getOutgoingMsgBuffer()
+{
+	return (_outGoingBuffer);
+}
+
+void Client::setMsgDest(std::string dest)
+{
+	_dest = dest;
+}
+
+std::string &Client::getMsgDest()
+{
+	return (_dest);
 }
 
 void Client::setIpAddr(struct sockaddr_storage *clientAddr)
@@ -110,7 +130,6 @@ void Client::setIpAddr(struct sockaddr_storage *clientAddr)
 	else
 		addr = &((struct sockaddr_in6 *)clientAddr)->sin6_addr;
 	_ipAddr = inet_ntop(clientAddr->ss_family, addr, ip, INET6_ADDRSTRLEN);
-	// std::cout << "Received connection from " << inet_ntop(clientAddr->ss_family, addr, ip, INET6_ADDRSTRLEN) << " on socket: " << _sockfd << "\r\n";
 }
 
 std::string const &Client::getIpAddr() const

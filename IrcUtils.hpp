@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/29 21:26:35 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 12:12:55 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 19:26:33 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include "responseCodes.hpp"
+#include "Client.hpp"
 
 bool hasWhiteSpace(std::string const &str);
 bool hasIllegalChars(std::string const &arg);

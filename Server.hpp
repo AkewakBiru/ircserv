@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 13:02:37 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/13 20:00:47 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@
 #include <poll.h>
 #include <fcntl.h>
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
 #include "Parser.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
@@ -42,13 +44,17 @@ class ServParams
 		int getPort() const;
 		std::string const &getPass() const;
 		void checkParams() const;
+		
 		void setServFd(int const fd);
 		int getServFd() const;
 
-		bool getServAddrInfo(void);
-		bool createSocket(void);
-		bool listenForConn(void) const;
-		bool handleRequest(void);
+		void setServCreationTime();
+		std::string &getServCreationTime();
+
+		bool getServAddrInfo();
+		bool createSocket();
+		bool listenForConn() const;
+		bool handleRequest();
 
 		bool deleteConnection(int fd);
 
@@ -60,8 +66,10 @@ class ServParams
 		ssize_t getNicksFd(std::string nick);
 
 		bool sendMsgAndCloseConnection(std::string const &msg, size_t index);
+		void sendWelcomingMsg(Client *client);
 
 	private:
+		std::string _creationTime;
 		std::string _password;
 		int _port;
 		int _servfd;
