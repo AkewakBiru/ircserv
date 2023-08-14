@@ -6,13 +6,13 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 13:05:28 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/14 23:25:00 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Commands.hpp"
 
-bool PASS(ServParams const &server, Client *client, std::vector<std::string> const &res)
+bool PASS(Server const &server, Client *client, std::vector<std::string> const &res)
 {
 	if (!client)
 		return (true);
@@ -28,7 +28,7 @@ bool PASS(ServParams const &server, Client *client, std::vector<std::string> con
 	return (false);
 }
 
-void NICK(ServParams &server, Client *client, std::vector<std::string> const &res)
+void NICK(Server &server, Client *client, std::vector<std::string> const &res)
 {
 	std::string tmp;
 	if (client->getStatus())
@@ -46,7 +46,7 @@ void NICK(ServParams &server, Client *client, std::vector<std::string> const &re
 	client->setNick(res[2]);
 }
 
-void USER(ServParams const &server, Client *client, std::vector<std::string> const &res)
+void USER(Server const &server, Client *client, std::vector<std::string> const &res)
 {
 	if (res.size() < 6)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));

@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 20:51:50 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 00:04:53 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,4 +93,21 @@ std::string genServErrMsg(std::string nick, std::string ip, std::string desc)
 	std::string error = "ERROR :Closing Link: ";
 	error.append(nick).append("[").append(ip).append("]").append(" (").append(desc).append(")\r\n");
 	return (error);
+}
+
+Server *getServerInstance(Server *instance)
+{
+	static Server *ptr;
+
+	if (instance)
+		ptr = instance;
+	return (ptr);
+}
+
+void sigHandle(int sig)
+{
+	(void) sig;
+	
+	getServerInstance(0)->setStatus(STOPPED);
+	std::cout << "\n:ircserv 10.0 has stopped" << std::endl;
 }

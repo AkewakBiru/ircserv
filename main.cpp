@@ -6,11 +6,12 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 19:54:40 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 20:11:30 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 00:04:48 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include "IrcUtils.hpp"
 
 // basic socket communication (server)
 int main(int ac, char **av)
@@ -20,10 +21,18 @@ int main(int ac, char **av)
 		std::cerr << "USAGE: ./ircserv port password" << std::endl;
 		return (EXIT_FAILURE);
 	}
-	ServParams servParams(av[2], atoi(av[1]));
+	struct sigaction sa;
+
+	Server Server(av[2], atoi(av[1]));
+	getServerInstance(&Server);
+	sa.sa_handler = sigHandle;
+	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
+	sigaction(SIGINT, &sa, 0);
+	sigaction(SIGQUIT, &sa, 0);
 	try
 	{
-		servParams.checkParams();
+		Server.checkParams();
 	}
 	catch(const std::exception& e)
 	{
@@ -31,17 +40,17 @@ int main(int ac, char **av)
 		return (EXIT_FAILURE);
 	}
 
-	servParams.setServCreationTime();
-	if (!servParams.getServAddrInfo())
+	Server.setServCreationTime();
+	if (!Server.getServAddrInfo())
 		return (EXIT_FAILURE);
 
-	if (!servParams.createSocket())
+	if (!Server.createSocket())
 		return (EXIT_FAILURE);
 
-	if (!servParams.listenForConn())
+	if (!Server.listenForConn())
 		return (EXIT_FAILURE);
 
 	std::cout << "Listening ......\n";
 
-	servParams.handleRequest();
+	Server.handleRequest();
 }

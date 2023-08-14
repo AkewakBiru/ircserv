@@ -6,24 +6,26 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 21:04:26 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 00:07:13 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-ServParams::ServParams(std::string pass, int const port): _creationTime(""), _password(pass), _port(port), _servfd(-1), _res(NULL), _fdCount(0), _pfds(0), _clients(0), _channels(0)
-{}
-
-ServParams::~ServParams()
+Server::Server(std::string pass, int const port): _creationTime(""), _password(pass), \
+_port(port), _servfd(-1), _res(NULL), _fdCount(0), _pfds(0), _clients(0), _channels(0)
 {
-	if (_servfd >= 0)
-		close(_servfd);
-	// if (_pfds)
-	// 	delete[] _pfds;
+	_status = RUNNING;
 }
 
-void ServParams::setServCreationTime()
+Server::~Server()
+{
+	std::cout << "destructor called\n";
+	if (_servfd >= 0)
+		close(_servfd);
+}
+
+void Server::setServCreationTime()
 {
 	std::stringstream strTime;
 	time_t now = time(0);
@@ -43,27 +45,27 @@ void ServParams::setServCreationTime()
 	_creationTime = strTime.str();
 }
 
-std::string &ServParams::getServCreationTime()
+std::string &Server::getServCreationTime()
 {
 	return (_creationTime);
 }
 
-void ServParams::setPass(std::string &newPass)
+void Server::setPass(std::string &newPass)
 {
 	_password = newPass;
 }
 
-std::string const &ServParams::getPass() const
+std::string const &Server::getPass() const
 {
 	return (_password);
 }
 
-int ServParams::getPort() const
+int Server::getPort() const
 {
 	return (_port);
 }
 
-void ServParams::checkParams() const
+void Server::checkParams() const
 {
 	if (_port < 1 || _port > 65535)
 		throw std::out_of_range("Port out of Range, valid range [1 - 65535]");
@@ -73,12 +75,12 @@ void ServParams::checkParams() const
 		throw std::invalid_argument("Password can't have whitespaces");
 }
 
-void ServParams::setServFd(int const fd)
+void Server::setServFd(int const fd)
 {
 	_servfd = fd;
 }
 
-int ServParams::getServFd() const
+int Server::getServFd() const
 {
 	return (_servfd);
 }
@@ -86,7 +88,7 @@ int ServParams::getServFd() const
 /*
 	** sets _res with the server's addrinfos
 */
-bool ServParams::getServAddrInfo(void)
+bool Server::getServAddrInfo(void)
 {
 	struct addrinfo hints;
 
@@ -112,7 +114,7 @@ bool ServParams::getServAddrInfo(void)
 	** sets the socket to be reusable
 	** assigns it a port and an IP (bind())
 */
-bool ServParams::createSocket(void)
+bool Server::createSocket(void)
 {
 	struct addrinfo *p;
 	int val = 1;
@@ -152,7 +154,7 @@ bool ServParams::createSocket(void)
 /*
 	** listens for incoming connection
 */
-bool ServParams::listenForConn(void) const
+bool Server::listenForConn(void) const
 {
 	if (listen(_servfd, std::numeric_limits<int>::max()) == -1)
 	{
@@ -162,7 +164,7 @@ bool ServParams::listenForConn(void) const
 	return (true);
 }
 
-bool ServParams::deleteConnection(int fd)
+bool Server::deleteConnection(int fd)
 {
 	for (std::vector<Channel *>::iterator it=_channels.begin(); it != _channels.end(); it++)
 	{
@@ -207,7 +209,7 @@ bool ServParams::deleteConnection(int fd)
 /*
 	** 
 */
-bool ServParams::sendMsgAndCloseConnection(std::string const &msg, size_t index)
+bool Server::sendMsgAndCloseConnection(std::string const &msg, size_t index)
 {
 	std::cout << "Lost connection to " << _clients[index-1]->getIpAddr() << " on socket " << _pfds[index].fd << std::endl;
 	send(_pfds[index].fd, msg.c_str(), msg.length(), 0);
@@ -216,7 +218,7 @@ bool ServParams::sendMsgAndCloseConnection(std::string const &msg, size_t index)
 	return (true);
 }
 
-bool ServParams::handleRequest(void)
+bool Server::handleRequest(void)
 {
 	fcntl(_servfd, F_SETFL, O_NONBLOCK);
 	char msg[512];
@@ -235,7 +237,7 @@ bool ServParams::handleRequest(void)
 	serv.revents = 0;
 	_pfds.push_back(serv);
 
-	while (true)
+	while (_status == RUNNING)
 	{
 		polled_fds = poll(&_pfds[0], _pfds.size(), -1);
 		if ( polled_fds == -1)
@@ -346,9 +348,10 @@ bool ServParams::handleRequest(void)
 			}
 		}
 	}
+	return (true);
 }
 
-void ServParams::addClient(Client *client)
+void Server::addClient(Client *client)
 {
 	_clients.push_back(client);
 }
@@ -358,7 +361,7 @@ static bool isEqual(Client const *client, int fd)
 	return (fd == client->getFd());
 }
 
-std::vector<Client *>::iterator ServParams::findFd(std::vector<Client *>& client, int fd)
+std::vector<Client *>::iterator Server::findFd(std::vector<Client *>& client, int fd)
 {
 	for (std::vector<Client *>::iterator it = client.begin(); it != client.end(); ++it)
 	{
@@ -371,7 +374,7 @@ std::vector<Client *>::iterator ServParams::findFd(std::vector<Client *>& client
 /*
 	
 */
-ssize_t ServParams::getNicksFd(std::string nick)
+ssize_t Server::getNicksFd(std::string nick)
 {
 	for (std::vector<Client *>::iterator it = _clients.begin(); it!=_clients.end(); it++)
 	{
@@ -381,7 +384,7 @@ ssize_t ServParams::getNicksFd(std::string nick)
 	return (-1);
 }
 
-void ServParams::removeClient(Client *client)
+void Server::removeClient(Client *client)
 {
 	std::vector<Client *>::iterator finder = findFd(_clients, client->getFd());
 	if (finder != _clients.end())
@@ -391,7 +394,7 @@ void ServParams::removeClient(Client *client)
 	}
 }
 
-bool ServParams::isRegistered(int fd)
+bool Server::isRegistered(int fd)
 {
 	for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{
@@ -405,7 +408,7 @@ bool ServParams::isRegistered(int fd)
 	return (false);
 }
 
-bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char const *msg, size_t index)
+bool Server::registerUser(int fd, std::vector<std::string> const &res, char const *msg, size_t index)
 {
 	std::string const &cmd = toUpper(res[1], false);
 	Client *client = *(findFd(_clients, fd));
@@ -471,7 +474,7 @@ bool ServParams::registerUser(int fd, std::vector<std::string> const &res, char 
 	return (true);
 }
 
-void ServParams::sendWelcomingMsg(Client *client)
+void Server::sendWelcomingMsg(Client *client)
 {
 	std::string msg = "";
 
@@ -480,4 +483,14 @@ void ServParams::sendWelcomingMsg(Client *client)
 	msg.append(":ircserv ").append(RPL_CREATED).append(" :This server was created ").append(_creationTime).append("\n");
 	msg.append(":ircserv ").append(RPL_MYINFO).append(" :ircserv 10.0\r\n");
 	send(client->getFd(), msg.c_str(), msg.length(), 0);
+}
+
+void Server::setStatus(bool status)
+{
+	_status = status;
+}
+
+int Server::getStatus() const
+{
+	return (_status);
 }

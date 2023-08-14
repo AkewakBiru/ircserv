@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 20:00:47 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 00:02:04 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,11 +35,17 @@
 #include "Commands.hpp"
 #include "responseCodes.hpp"
 
-class ServParams
+enum
+{
+	RUNNING,
+	STOPPED
+};
+
+class Server
 {
 	public:
-		ServParams(std::string pass, int const port);
-		~ServParams();
+		Server(std::string pass, int const port);
+		~Server();
 		void setPass(std::string &newPass);
 		int getPort() const;
 		std::string const &getPass() const;
@@ -68,6 +74,9 @@ class ServParams
 		bool sendMsgAndCloseConnection(std::string const &msg, size_t index);
 		void sendWelcomingMsg(Client *client);
 
+		void setStatus(bool status);
+		int getStatus() const;
+
 	private:
 		std::string _creationTime;
 		std::string _password;
@@ -79,5 +88,7 @@ class ServParams
 
 		std::vector<Client *> _clients;
 		std::vector<Channel *> _channels;
+		
+		bool _status;
 };
 #endif

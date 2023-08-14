@@ -8,9 +8,9 @@
 #include "Server.hpp"
 #include "Parser.hpp"
 
-class ServParams;
+class Server;
 
-void NICK(ServParams &server, Client *client, std::vector<std::string> const &res);
-bool PASS(ServParams const &server, Client *client, std::vector<std::string> const &res);
-void USER(ServParams const &server, Client *client, std::vector<std::string> const &res);
+void NICK(Server &server, Client *client, std::vector<std::string> const &res);
+bool PASS(Server const &server, Client *client, std::vector<std::string> const &res);
+void USER(Server const &server, Client *client, std::vector<std::string> const &res);
 #endif
