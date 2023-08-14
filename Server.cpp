@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 00:07:13 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 00:23:36 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,37 @@ _port(port), _servfd(-1), _res(NULL), _fdCount(0), _pfds(0), _clients(0), _chann
 	_status = RUNNING;
 }
 
+void Server::cleanup()
+{
+	// close fds
+	for (std::vector<pollfd>::iterator it=_pfds.begin(); it!=_pfds.end(); it++)
+	{
+		close(it->fd);
+		it->fd = -1;
+	}
+
+	// delete clients
+	for (std::vector<Client *>::iterator it=_clients.begin(); it != _clients.end(); it++)
+	{
+		delete(*it);
+		(*it) = NULL;
+	}
+
+	// delete channels
+	for (std::vector<Channel *>::iterator it=_channels.begin(); it != _channels.end(); it++)
+	{
+		delete (*it);
+		(*it) = NULL;
+	}
+}
+
 Server::~Server()
 {
 	std::cout << "destructor called\n";
+	cleanup();
 	if (_servfd >= 0)
 		close(_servfd);
+	_servfd = -1;
 }
 
 void Server::setServCreationTime()
