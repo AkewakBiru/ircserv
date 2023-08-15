@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/29 21:26:35 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 00:06:36 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 20:41:33 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,5 +30,6 @@ std::string toUpper(std::string const &arg, bool flag);
 std::string genErrMsg(char const *errCode, std::string optional, std::string cmd, std::string desc);
 std::string genServErrMsg(std::string nick, std::string ip, std::string desc);
 void sigHandle(int sig);
+void sendMsg(int fd, std::string msg);
 Server *getServerInstance(Server *instance);
 #endif

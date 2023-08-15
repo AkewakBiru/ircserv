@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 00:23:36 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 21:16:07 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,23 +244,43 @@ bool Server::sendMsgAndCloseConnection(std::string const &msg, size_t index)
 	return (true);
 }
 
+void Server::acceptNewConnection()
+{
+	struct sockaddr_storage clientAddr;
+	socklen_t cLen = sizeof(clientAddr);
+	int conn = accept(_servfd, (struct sockaddr *)&clientAddr, &cLen);
+	
+	if (conn == -1)
+		std::cerr << "accept: " << strerror(errno) << std::endl;
+	else
+		addNewClient(conn, &clientAddr);
+}
+
+void Server::addNewClient(int fd, struct sockaddr_storage *client_addr)
+{
+
+	struct pollfd newConnection = { fd, POLLIN | POLLOUT, 0};
+	_pfds.push_back(newConnection);
+
+	Client *client = new Client();
+	client->setIpAddr(client_addr);
+	std::cout << "Received connection from " << client->getIpAddr() << " on socket: " << fd << "\r\n";
+	client->setJoinedTime(std::time(0));
+	client->setFd(fd);
+	_clients.push_back(client);
+}
+
 bool Server::handleRequest(void)
 {
 	fcntl(_servfd, F_SETFL, O_NONBLOCK);
 	char msg[512];
 	Parser parser;
-	struct sockaddr_storage client_addr;
-	socklen_t c_len = sizeof(client_addr);
-	int conn;
 	int polled_fds;
 	int data;
 	size_t i;
 
 	// add the server to the pfds vector
-	struct pollfd serv;
-	serv.fd = _servfd;
-	serv.events = POLLIN;
-	serv.revents = 0;
+	struct pollfd serv = {_servfd, POLLIN, 0};
 	_pfds.push_back(serv);
 
 	while (_status == RUNNING)
@@ -278,27 +298,7 @@ bool Server::handleRequest(void)
 			{
 				// is that someone the server
 				if (_pfds[i].fd == _servfd)
-				{
-					conn = accept(_servfd, (struct sockaddr *)&client_addr, &c_len);
-					if (conn == -1)
-						std::cerr << "accept: " << strerror(errno) << std::endl;
-					else
-					{
-						struct pollfd newConnection;
-						newConnection.fd = conn;
-						newConnection.events = POLLIN | POLLOUT;
-						newConnection.revents = 0;
-						_pfds.push_back(newConnection);
-						Client *client = new Client();
-						client->setIpAddr(&client_addr);
-						std::cout << "Received connection from " << client->getIpAddr() << " on socket: " << conn << "\r\n";
-						client->setJoinedTime(std::time(0));
-						client->setFd(conn);
-						_clients.push_back(client);
-						// capability request from irssi should have the below response
-						send(conn, (void *)"CAP * ACK multi-prefix\r\n", 24, 0);
-					}
-				}
+					acceptNewConnection();
 				else
 				{
 					std::memset(msg, 0, 512);

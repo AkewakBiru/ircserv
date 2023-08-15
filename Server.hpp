@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 00:19:02 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 21:14:26 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,9 @@ class Server
 
 		void setStatus(bool status);
 		int getStatus() const;
+
+		void acceptNewConnection(void);
+		void addNewClient(int fd, struct sockaddr_storage *client_addr);
 
 		void cleanup();
 

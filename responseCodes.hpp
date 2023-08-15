@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:57:37 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 13:12:19 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 20:37:23 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,4 +39,7 @@
 #define ERR_UNAUTHORIZED_ACCESS "You are not authorized to connect to this server"
 #define ERR_INCORRECT_PASSWORD "Incorrect password! "
 #define ERR_CMD_NOT_PASSWORD "Please send your password as the first message."
+#define ERR_INVALIDCAPCMD "410"
+#define ERR_INVALIDCAPCMD_DESC ":Invalid CAP command"
+
 #endif

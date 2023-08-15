@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 00:04:53 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 20:42:05 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,4 +110,9 @@ void sigHandle(int sig)
 	
 	getServerInstance(0)->setStatus(STOPPED);
 	std::cout << "\n:ircserv 10.0 has stopped" << std::endl;
+}
+
+void sendMsg(int fd, std::string msg)
+{
+	send(fd, msg.c_str(), msg.length(), 0);
 }

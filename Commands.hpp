@@ -13,4 +13,5 @@ class Server;
 void NICK(Server &server, Client *client, std::vector<std::string> const &res);
 bool PASS(Server const &server, Client *client, std::vector<std::string> const &res);
 void USER(Server const &server, Client *client, std::vector<std::string> const &res);
+void CAP(Server const &server, Client *client, std::vector<std::string> const &res);
 #endif
