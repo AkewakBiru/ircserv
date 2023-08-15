@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 21:16:07 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 23:25:47 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -325,38 +325,41 @@ bool Server::handleRequest(void)
 						msg[510] = '\r';
 						msg[511] = '\n';
 						
-						_clients[i - 1]->setMsgBuffer(_clients[i - 1]->getMsgBuffer().append(msg));
-						if (msg[std::strlen(msg) - 1] != '\n')
-							continue ;
-						if (!parser.isSpaces(_clients[i - 1]->getMsgBuffer()))
-						{
-							// if (hasIllegalChars(msg))
-							// {
-							// 	std::string err = genErrMsg(ERR)
-							// }
-							parser.parseInput(_clients[i - 1]->getMsgBuffer());
-							std::vector<std::string> const &res = parser.getRes();
+						
+						_clients[i - 1]->addToBuffer(msg);
+						// _clients[i - 1]->setMsgBuffer(_clients[i - 1]->getMsgBuffer().append(msg));
+						// if (msg[std::strlen(msg) - 1] != '\n')
+						// 	continue ;
+						
+						// if (!parser.isSpaces(_clients[i - 1]->getMsgBuffer()))
+						// {
+						// 	// if (hasIllegalChars(msg))
+						// 	// {
+						// 	// 	std::string err = genErrMsg(ERR)
+						// 	// }
+						// 	parser.parseInput(_clients[i - 1]->getMsgBuffer());
+						// 	std::vector<std::string> const &res = parser.getRes();
 
-							if (!isRegistered(_pfds[i].fd))
-							{
-								if (std::time(0) - _clients[i-1]->getJoinedTime() >= 60)
-									sendMsgAndCloseConnection(genServErrMsg("", _clients[i-1]->getIpAddr(), "Registration Timeout"), i);
-								try
-								{
-									registerUser(_pfds[i].fd, res, msg, i);
-								}
-								catch(const std::exception& e)
-								{
-									std::string tmp = e.what();
-									send(_pfds[i].fd, tmp.c_str(), tmp.length(), 0);
-								}
-							}
-							else
-							{
-								// this is where you write the user part and channel part, shatha, youssef
-							}
-						}
-						_clients[i - 1]->setMsgBuffer("");
+						// 	if (!isRegistered(_pfds[i].fd))
+						// 	{
+						// 		if (std::time(0) - _clients[i-1]->getJoinedTime() >= 60)
+						// 			sendMsgAndCloseConnection(genServErrMsg("", _clients[i-1]->getIpAddr(), "Registration Timeout"), i);
+						// 		try
+						// 		{
+						// 			registerUser(_pfds[i].fd, res, msg, i);
+						// 		}
+						// 		catch(const std::exception& e)
+						// 		{
+						// 			std::string tmp = e.what();
+						// 			send(_pfds[i].fd, tmp.c_str(), tmp.length(), 0);
+						// 		}
+						// 	}
+						// 	else
+						// 	{
+						// 		// this is where you write the user part and channel part, shatha, youssef
+						// 	}
+						// }
+						// _clients[i - 1]->setMsgBuffer("");
 						parser.resetRes();
 						std::memset(msg, 0, sizeof(msg));
 					}
@@ -520,3 +523,4 @@ int Server::getStatus() const
 {
 	return (_status);
 }
+

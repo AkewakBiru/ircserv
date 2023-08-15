@@ -6,13 +6,13 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 20:51:02 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 23:21:04 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), _sockfd(-1), _msgBuffer(""), _outGoingBuffer(""), _joinedTime(0), _ipAddr("")
+Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), _sockfd(-1), _dataBuffer(0), _outGoingBuffer(""), _joinedTime(0), _ipAddr("")
 {}
 
 Client::~Client()
@@ -91,14 +91,14 @@ bool Client::hasPassword() const
 	return (_password);
 }
 
-void Client::setMsgBuffer(std::string msg)
-{
-	_msgBuffer = msg;
-}
-std::string &Client::getMsgBuffer()
-{
-	return (_msgBuffer);
-}
+// void Client::setMsgBuffer(std::string msg)
+// {
+// 	_msgBuffer = msg;
+// }
+// std::string &Client::getMsgBuffer()
+// {
+// 	return (_msgBuffer);
+// }
 
 void Client::setOutgoingMsgBuffer(std::string msg)
 {
@@ -135,4 +135,24 @@ void Client::setIpAddr(struct sockaddr_storage *clientAddr)
 std::string const &Client::getIpAddr() const
 {
 	return (_ipAddr);
+}
+
+void Client::addToBuffer(std::string msg)
+{
+	size_t start = 0, end = 0;
+	
+	while (start < msg.length())
+	{
+		end = msg.find("\r\n", start);
+		if (end != std::string::npos)
+			_dataBuffer.push_back(msg.substr(start, end - start + 2));
+		else
+		{
+			_dataBuffer.push_back(msg.substr(start, msg.length() - start + 1));
+			break ;
+		}
+		start = end + 2;
+	}
+	// for (std::vector<std::string>::iterator it = _dataBuffer.begin(); it!=_dataBuffer.end(); ++it)
+	// 	std::cout << "[" << *it << "]";
 }

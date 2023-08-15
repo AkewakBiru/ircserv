@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
+/*   client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/13 20:49:43 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/15 23:18:38 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,9 @@ class Client
 
 		void setIpAddr(struct sockaddr_storage *clientAddr);
 		std::string const &getIpAddr() const;
+		
+		void addToBuffer(std::string msg);
+
 
 	// msg format: USER username * * :full_name
 	//             NICK nick
@@ -75,7 +78,7 @@ class Client
 		bool _isRegistered;
 		bool _password;
 		int	_sockfd;
-		std::string _msgBuffer;
+		std::vector<std::string> _dataBuffer;
 		std::string _outGoingBuffer;
 		std::string _dest;
 		char _msg[1024];
