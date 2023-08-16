@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 17:00:52 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 21:55:21 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@ Server::Server(std::string pass, int const port): _creationTime(""), _password(p
 _port(port), _servfd(-1), _res(NULL), _fdCount(0), _pfds(0), _clients(0), _channels(0)
 {
 	_status = RUNNING;
+	std::string cmds[] = { "NICK", "USER", "CAP", "PASS", "JOIN", "PRIVMSG", "PART", "KICK", "QUIT" };
+	for (size_t i=0; i < sizeof(cmds) / sizeof(cmds[0]); i++) { _validCmds.push_back(cmds[i]); };
 }
 
 void Server::cleanup()
@@ -267,10 +269,7 @@ void Server::addNewClient(int fd, struct sockaddr_storage *client_addr)
 	std::cout << "Received connection from " << client->getIpAddr() << " on socket: " << fd << "\r\n";
 	client->setJoinedTime(std::time(0));
 	client->setFd(fd);
-	_clients.push_back(client);
-	// sendMsg(fd, "CAP * LS :multi-prefix\r\n");
-	// sendMsg(fd, "CAP * ACK :multi-prefix\r\n");
-	
+	_clients.push_back(client);	
 }
 
 bool Server::handleRequest(void)
@@ -321,14 +320,12 @@ bool Server::handleRequest(void)
 					}
 					else
 					{
-						// Client sends message to the server
-						// Client should have an outGoingBuffer to save data in (when intending to send a message)
-						// Client has 60 sec window to register
 						msg[510] = '\r';
 						msg[511] = '\n';
 
+						// adds msg to the dataBuffer
 						_clients[i - 1]->addToBuffer(msg);
-						executeCmd(_clients[i - 1]);
+						processBuffer(_clients[i - 1]);
 						std::memset(msg, 0, sizeof(msg));
 					}
 				}
@@ -349,26 +346,35 @@ bool Server::handleRequest(void)
 }
 
 
+void Server::executeCmd(Client *client, std::vector<std::string> const &res)
+{
+	if (!isValidCmd(res[1], _validCmds))
+		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNCOMMAND, client->getNick(), res[1], ERR_UNKNOWNCOMMAND_DESC));
+	return ;
+}
+
 // any received msg will be put in a buffer, i will use splitter to find crlf & put the output in a queue
 // then dequeue and exec the cmds in the queue
-void Server::executeCmd(Client *client)
+void Server::processBuffer(Client *client)
 {
-	// get data from the dataBuffer, check if the item from has CRLF ending sequence,
-	// if it does pop it, and execute and continue
-	// if it doesn't, don't pop it -> append it to the next, and see if the next has CRLF sequence, if so, pop both
-	// std::cout << "here\n";
 	Parser parser;
+
 	if (client->getDataBuffer().empty())
-	{
-		std::cout << "nothing\n";
 		return ;
-	}
-	size_t size = client->getDataBuffer().size();
 	while (client->getDataBuffer().size())
 	{
-		parser.parseInput(client->getDataBuffer().front());
+		try
+		{
+			parser.parseInput(client->getDataBuffer().front());
+		}
+		catch (std::exception const &e)
+		{
+			client->rmvfromBuf();
+			parser.resetRes();
+			sendMsg(client->getFd(), e.what());
+			continue ;
+		}
 		client->rmvfromBuf();
-		std::cout << "server: " << client->getDataBuffer().front() <<  "\n";
 		std::vector<std::string> const &res = parser.getRes();
 		if (!isRegistered(client->getFd()))
 		{
@@ -380,12 +386,21 @@ void Server::executeCmd(Client *client)
 			}
 			catch(const std::exception& e)
 			{
-				std::string tmp = e.what();
-				send(client->getFd(), tmp.c_str(), tmp.length(), 0);
+				sendMsg(client->getFd(), e.what());
+			}
+		}
+		else
+		{
+			try
+			{
+				executeCmd(client, res);
+			}
+			catch(const std::exception& e)
+			{
+				sendMsg(client->getFd(), e.what());
 			}
 		}
 		parser.resetRes();
-		// if i get crlf seq on the cmd, parse and execute it, else continue
 	}
 }
 
@@ -410,7 +425,7 @@ std::vector<Client *>::iterator Server::findFd(std::vector<Client *>& client, in
 }
 
 /*
-	
+	** returns fd associated with a nick
 */
 ssize_t Server::getNicksFd(std::string nick)
 {
@@ -449,7 +464,6 @@ bool Server::isRegistered(int fd)
 bool Server::registerUser(Client *client, std::vector<std::string> const &res)
 {
 	std::string const &cmd = toUpper(res[1], false);
-	// Client *client = *(findFd(_clients, fd));
 
 	// if client has a correct password, nick and user, set their status as joined
 	if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)

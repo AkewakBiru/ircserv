@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 16:44:33 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 21:57:07 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,6 @@ void Client::addToBuffer(std::string msg)
 {
 	size_t pos = 0;
 	
-	// std::cout << msg << "\n";
 	if (isSpaces(msg))
 		return ;
 	_recvBuf.append(msg);
@@ -155,9 +154,6 @@ void Client::addToBuffer(std::string msg)
 		_execBuf.push(_recvBuf.substr(0, pos + 2));
 		_recvBuf.erase(0, pos + 2);
 	}
-	std::cout << "recved buffer: " << _recvBuf << "\n";
-	// for (std::vector<std::string>::iterator it = _dataBuffer.begin(); it!=_dataBuffer.end(); ++it)
-	// 	std::cout << "[" << *it << "]";
 }
 
 std::queue<std::string> const &Client::getDataBuffer() const

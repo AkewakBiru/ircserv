@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:24:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 16:01:58 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 20:59:28 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class Parser
 		~Parser();
 		std::vector<std::string>const &getRes(void) const;
 		void resetRes(void);
-		bool parseInput(std::string data);
+		void parseInput(std::string data);
 		size_t findMsgSize(char const *data);
 
 	private:

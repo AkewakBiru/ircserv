@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 16:22:11 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 21:45:52 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 bool hasWhiteSpace(std::string const &str)
 {
-	return (str.find_first_of(" \t\r\n\v\f") != std::string::npos ? true : false);
+	return ( str.find_first_of(" \t\r\n\v\f") != std::string::npos );
 }
 
 /*
@@ -38,7 +38,7 @@ bool hasIllegalChars(std::string const &arg)
 */
 bool userIllegalChars(std::string const &arg)
 {
-	return (arg.find_first_of("\0\r\n@ ") != std::string::npos ? true : false);
+	return ( arg.find_first_of("\0\r\n@ ") != std::string::npos );
 }
 
 std::string toUpper(std::string const &arg, bool flag)
@@ -109,7 +109,14 @@ void sendMsg(int fd, std::string msg)
 
 bool isSpaces(std::string const &str)
 {
-	return (str.find_first_not_of(" \t\r\n\v\f") == std::string::npos ? true : false);
+	for (size_t i=0; i<str.length(); i++)
+	{
+		if (str[i] != ' ' && str[i] != '\n' && str[i] != '\r')
+			return (false);
+		else if ((str[i] == '\n' && i == 0) || (str[i] == '\n' && str[i - 1] != '\r'))
+			return (false);
+	}
+	return (true);
 }
 
 /*
@@ -120,4 +127,10 @@ std::string &rtrim(std::string &str, std::string const &set)
 	if ( ssize_t start = str.rfind(set) != std::string::npos )
 		str.erase(str.length() - start - 1, set.length());
 	return (str);
+}
+
+bool isValidCmd(std::string const &cmd, std::vector<std::string> const &cmdList)
+{
+	std::vector<std::string>::const_iterator it = (std::find(cmdList.begin(), cmdList.end(), cmd));
+	return (  it != cmdList.end() );
 }

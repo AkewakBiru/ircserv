@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:26:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 16:05:35 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 21:04:54 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,22 +23,18 @@ std::vector<std::string> const &Parser::getRes(void) const
 	return (_res);
 }
 
-bool Parser::parseInput(std::string arg)
+void Parser::parseInput(std::string arg)
 {
 	int i = 0, start = 0, end=0;
 
-	std::cout << arg << "\n";
-	rtrim(arg, "\r\n");
-	std::cout << arg << "\n";
-	// if (findMsgSize(arg.c_str()) > 0)
-	// 	arg = arg.substr(0, findMsgSize(arg.c_str()));
+	rtrim(arg, "\r\n");		
 	while (start < arg.length())
 	{
 		while (arg[start] == ' ')
 			start++;
 		if (_res.size() == 0)
 		{
-			if (arg[start] == '!')
+			if (arg[start] == ':')
 			{
 				end = arg.find_first_of(" ", start);
 				if (end == start)
@@ -71,7 +67,6 @@ bool Parser::parseInput(std::string arg)
 			end++;
 		start = end;
 	}
-	return (true);
 }
 
 void Parser::resetRes(void)

@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 15:48:21 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 21:31:57 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,8 @@ class Server
 
 		void cleanup();
 
-		void executeCmd(Client *client);
+		void processBuffer(Client *client);
+		void executeCmd(Client *client, std::vector<std::string> const &res);
 
 	private:
 		std::string _creationTime;
@@ -101,5 +102,7 @@ class Server
 		std::vector<Channel *> _channels;
 		
 		bool _status;
+		
+		std::vector<std::string> _validCmds;
 };
 #endif

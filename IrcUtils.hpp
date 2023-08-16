@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/29 21:26:35 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 16:02:31 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 21:40:58 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,4 +34,5 @@ void sendMsg(int fd, std::string msg);
 Server *getServerInstance(Server *instance);
 bool isSpaces(std::string const &str);
 std::string &rtrim(std::string &str, std::string const &set);
+bool isValidCmd(std::string const &cmd, std::vector<std::string> const &cmdList);
 #endif
