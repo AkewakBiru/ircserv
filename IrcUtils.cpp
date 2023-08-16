@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 20:42:05 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 16:22:11 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,7 @@
 
 bool hasWhiteSpace(std::string const &str)
 {
-	for (size_t i=0; i<str.length(); i++)
-	{
-		if (std::isspace(str[i]))
-			return (true);
-	}
-	return (false);
+	return (str.find_first_of(" \t\r\n\v\f") != std::string::npos ? true : false);
 }
 
 /*
@@ -38,18 +33,12 @@ bool hasIllegalChars(std::string const &arg)
 	return (false);
 }
 
+/*
+	username can't have "\0\r\n@ " in it
+*/
 bool userIllegalChars(std::string const &arg)
 {
-	const char *options = "\0\r\n@ ";
-	for (size_t i=0; i<arg.length(); i++)
-	{
-		for (uint8_t j=0; j<5; j++)
-		{
-			if (arg[i] == options[j])
-				return (true);
-		}
-	}
-	return (false);
+	return (arg.find_first_of("\0\r\n@ ") != std::string::npos ? true : false);
 }
 
 std::string toUpper(std::string const &arg, bool flag)
@@ -115,4 +104,20 @@ void sigHandle(int sig)
 void sendMsg(int fd, std::string msg)
 {
 	send(fd, msg.c_str(), msg.length(), 0);
+}
+
+
+bool isSpaces(std::string const &str)
+{
+	return (str.find_first_not_of(" \t\r\n\v\f") == std::string::npos ? true : false);
+}
+
+/*
+	** right trims a substring
+*/
+std::string &rtrim(std::string &str, std::string const &set)
+{
+	if ( ssize_t start = str.rfind(set) != std::string::npos )
+		str.erase(str.length() - start - 1, set.length());
+	return (str);
 }

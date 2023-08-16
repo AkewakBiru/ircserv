@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:26:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/12 23:31:34 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 16:05:35 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,22 +23,15 @@ std::vector<std::string> const &Parser::getRes(void) const
 	return (_res);
 }
 
-bool Parser::isSpaces(std::string const &str)
-{
-	for (std::string::const_iterator i=str.begin(); i!=str.end(); ++i)
-	{
-		if (!std::isspace(*i))
-			return (false);
-	}
-	return (true);
-}
-
 bool Parser::parseInput(std::string arg)
 {
 	int i = 0, start = 0, end=0;
 
-	if (findMsgSize(arg.c_str()) > 0)
-		arg = arg.substr(0, findMsgSize(arg.c_str()));
+	std::cout << arg << "\n";
+	rtrim(arg, "\r\n");
+	std::cout << arg << "\n";
+	// if (findMsgSize(arg.c_str()) > 0)
+	// 	arg = arg.substr(0, findMsgSize(arg.c_str()));
 	while (start < arg.length())
 	{
 		while (arg[start] == ' ')
@@ -80,36 +73,6 @@ bool Parser::parseInput(std::string arg)
 	}
 	return (true);
 }
-
-// bool Parser::parseInput(char const *data)
-// {
-// 	if (!data)
-// 		return (false);
-// 	std::string tmp = data;
-// 	std::string params;
-//     std::string word;
-
-// 	if (findMsgSize(data) > 0)
-// 		tmp = tmp.substr(0, findMsgSize(data));
-// 	std::stringstream ss(tmp);
-
-//     while (ss >> word) {
-// 		if (_res.size() == 0)
-// 		{
-// 			if (word[0] == '!')
-// 				_res.push_back(word);
-// 			else
-// 				_res.push_back("");
-// 		}
-// 		if (_res.size() < 2)
-// 			_res.push_back(word);
-// 		else
-// 			params.append(word).append(" ");
-//     }
-// 	params = params.substr(0, params.find_last_of(" "));
-// 	_res.push_back(params);
-// 	return (true);
-// }
 
 void Parser::resetRes(void)
 {

@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/08 21:18:42 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 14:38:59 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #define CHANNEL_HPP
 #include "Client.hpp"
 #include <vector>
+
+class Client;
 
 class Channel
 {
@@ -25,6 +27,6 @@ class Channel
 
 	private:
 		std::vector<Client *> _members;
-		Client _operator;
+		Client *_operator;
 };
 #endif

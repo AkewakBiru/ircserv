@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 23:25:47 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 17:00:52 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,12 +235,12 @@ bool Server::deleteConnection(int fd)
 /*
 	** 
 */
-bool Server::sendMsgAndCloseConnection(std::string const &msg, size_t index)
+bool Server::sendMsgAndCloseConnection(std::string const &msg, Client *client)
 {
-	std::cout << "Lost connection to " << _clients[index-1]->getIpAddr() << " on socket " << _pfds[index].fd << std::endl;
-	send(_pfds[index].fd, msg.c_str(), msg.length(), 0);
-	close(_pfds[index].fd);
-	deleteConnection(_pfds[index].fd);
+	std::cout << "Lost connection to " << client->getIpAddr() << " on socket " << client->getFd() << std::endl;
+	send(client->getFd(), msg.c_str(), msg.length(), 0);
+	close(client->getFd());
+	deleteConnection(client->getFd());
 	return (true);
 }
 
@@ -268,13 +268,15 @@ void Server::addNewClient(int fd, struct sockaddr_storage *client_addr)
 	client->setJoinedTime(std::time(0));
 	client->setFd(fd);
 	_clients.push_back(client);
+	// sendMsg(fd, "CAP * LS :multi-prefix\r\n");
+	// sendMsg(fd, "CAP * ACK :multi-prefix\r\n");
+	
 }
 
 bool Server::handleRequest(void)
 {
 	fcntl(_servfd, F_SETFL, O_NONBLOCK);
 	char msg[512];
-	Parser parser;
 	int polled_fds;
 	int data;
 	size_t i;
@@ -324,43 +326,9 @@ bool Server::handleRequest(void)
 						// Client has 60 sec window to register
 						msg[510] = '\r';
 						msg[511] = '\n';
-						
-						
-						_clients[i - 1]->addToBuffer(msg);
-						// _clients[i - 1]->setMsgBuffer(_clients[i - 1]->getMsgBuffer().append(msg));
-						// if (msg[std::strlen(msg) - 1] != '\n')
-						// 	continue ;
-						
-						// if (!parser.isSpaces(_clients[i - 1]->getMsgBuffer()))
-						// {
-						// 	// if (hasIllegalChars(msg))
-						// 	// {
-						// 	// 	std::string err = genErrMsg(ERR)
-						// 	// }
-						// 	parser.parseInput(_clients[i - 1]->getMsgBuffer());
-						// 	std::vector<std::string> const &res = parser.getRes();
 
-						// 	if (!isRegistered(_pfds[i].fd))
-						// 	{
-						// 		if (std::time(0) - _clients[i-1]->getJoinedTime() >= 60)
-						// 			sendMsgAndCloseConnection(genServErrMsg("", _clients[i-1]->getIpAddr(), "Registration Timeout"), i);
-						// 		try
-						// 		{
-						// 			registerUser(_pfds[i].fd, res, msg, i);
-						// 		}
-						// 		catch(const std::exception& e)
-						// 		{
-						// 			std::string tmp = e.what();
-						// 			send(_pfds[i].fd, tmp.c_str(), tmp.length(), 0);
-						// 		}
-						// 	}
-						// 	else
-						// 	{
-						// 		// this is where you write the user part and channel part, shatha, youssef
-						// 	}
-						// }
-						// _clients[i - 1]->setMsgBuffer("");
-						parser.resetRes();
+						_clients[i - 1]->addToBuffer(msg);
+						executeCmd(_clients[i - 1]);
 						std::memset(msg, 0, sizeof(msg));
 					}
 				}
@@ -378,6 +346,47 @@ bool Server::handleRequest(void)
 		}
 	}
 	return (true);
+}
+
+
+// any received msg will be put in a buffer, i will use splitter to find crlf & put the output in a queue
+// then dequeue and exec the cmds in the queue
+void Server::executeCmd(Client *client)
+{
+	// get data from the dataBuffer, check if the item from has CRLF ending sequence,
+	// if it does pop it, and execute and continue
+	// if it doesn't, don't pop it -> append it to the next, and see if the next has CRLF sequence, if so, pop both
+	// std::cout << "here\n";
+	Parser parser;
+	if (client->getDataBuffer().empty())
+	{
+		std::cout << "nothing\n";
+		return ;
+	}
+	size_t size = client->getDataBuffer().size();
+	while (client->getDataBuffer().size())
+	{
+		parser.parseInput(client->getDataBuffer().front());
+		client->rmvfromBuf();
+		std::cout << "server: " << client->getDataBuffer().front() <<  "\n";
+		std::vector<std::string> const &res = parser.getRes();
+		if (!isRegistered(client->getFd()))
+		{
+			if (std::time(0) - client->getJoinedTime() >= 60)
+				sendMsgAndCloseConnection(genServErrMsg("", client->getIpAddr(), "Registration Timeout"), client);
+			try
+			{
+				registerUser(client, res);
+			}
+			catch(const std::exception& e)
+			{
+				std::string tmp = e.what();
+				send(client->getFd(), tmp.c_str(), tmp.length(), 0);
+			}
+		}
+		parser.resetRes();
+		// if i get crlf seq on the cmd, parse and execute it, else continue
+	}
 }
 
 void Server::addClient(Client *client)
@@ -437,28 +446,40 @@ bool Server::isRegistered(int fd)
 	return (false);
 }
 
-bool Server::registerUser(int fd, std::vector<std::string> const &res, char const *msg, size_t index)
+bool Server::registerUser(Client *client, std::vector<std::string> const &res)
 {
 	std::string const &cmd = toUpper(res[1], false);
-	Client *client = *(findFd(_clients, fd));
+	// Client *client = *(findFd(_clients, fd));
 
 	// if client has a correct password, nick and user, set their status as joined
 	if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)
 		client->setStatus(true);
-	if (!client->hasPassword() && cmd != "PASS")
+	// if (!client->hasPassword() && cmd != "PASS")
+	// {
+	// 	sendMsgAndCloseConnection(genServErrMsg("Password required. ", client->getIpAddr(), ERR_CMD_NOT_PASSWORD), client);
+	// 	return (true);
+	// }
+	if (cmd == "NICK" || cmd == "USER" || cmd == "PASS" || cmd == "CAP")
 	{
-		sendMsgAndCloseConnection(genServErrMsg("Password required. ", client->getIpAddr(), ERR_CMD_NOT_PASSWORD), index);
-		return (true);
-	}
-	if (cmd == "NICK" || cmd == "USER" || cmd == "PASS")
-	{
+		if (cmd == "CAP")
+		{
+			try 
+			{
+				CAP(*this, client, res);
+			}
+			catch (std::exception const &e)
+			{
+				(void) e;
+				throw ;
+			}
+		}
 		if (cmd == "PASS")
 		{
 			try
 			{
 				if (!PASS(*this, client, res))
 				{
-					sendMsgAndCloseConnection(genServErrMsg(ERR_INCORRECT_PASSWORD, client->getIpAddr(), ERR_UNAUTHORIZED_ACCESS), index);
+					sendMsgAndCloseConnection(genServErrMsg(ERR_INCORRECT_PASSWORD, client->getIpAddr(), ERR_UNAUTHORIZED_ACCESS), client);
 					return (true);
 				}
 			}

@@ -6,13 +6,14 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 23:21:04 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 16:44:33 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), _sockfd(-1), _dataBuffer(0), _outGoingBuffer(""), _joinedTime(0), _ipAddr("")
+Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), \
+_sockfd(-1), _outGoingBuffer(""), _joinedTime(0), _ipAddr(""), _recvBuf("")
 {}
 
 Client::~Client()
@@ -137,22 +138,34 @@ std::string const &Client::getIpAddr() const
 	return (_ipAddr);
 }
 
+/*
+	** adds recvd msg to _recvBuf & finds part of the msg that has CRLF,
+	** puts it in _execBuf.
+*/
 void Client::addToBuffer(std::string msg)
 {
-	size_t start = 0, end = 0;
+	size_t pos = 0;
 	
-	while (start < msg.length())
+	// std::cout << msg << "\n";
+	if (isSpaces(msg))
+		return ;
+	_recvBuf.append(msg);
+	while ( (pos = _recvBuf.find("\r\n")) != std::string::npos )
 	{
-		end = msg.find("\r\n", start);
-		if (end != std::string::npos)
-			_dataBuffer.push_back(msg.substr(start, end - start + 2));
-		else
-		{
-			_dataBuffer.push_back(msg.substr(start, msg.length() - start + 1));
-			break ;
-		}
-		start = end + 2;
+		_execBuf.push(_recvBuf.substr(0, pos + 2));
+		_recvBuf.erase(0, pos + 2);
 	}
+	std::cout << "recved buffer: " << _recvBuf << "\n";
 	// for (std::vector<std::string>::iterator it = _dataBuffer.begin(); it!=_dataBuffer.end(); ++it)
 	// 	std::cout << "[" << *it << "]";
+}
+
+std::queue<std::string> const &Client::getDataBuffer() const
+{
+	return (_execBuf);
+}
+
+void Client::rmvfromBuf()
+{
+	_execBuf.pop();
 }

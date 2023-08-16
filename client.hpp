@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 23:18:38 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/16 16:24:05 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,13 @@
 #define CLIENT_HPP
 #include <iostream>
 #include <string>
+#include <queue>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <netdb.h>
 #include <unistd.h>
+#include "IrcUtils.hpp"
 
 // enum MODES
 // {
@@ -67,6 +69,9 @@ class Client
 		std::string const &getIpAddr() const;
 		
 		void addToBuffer(std::string msg);
+		void rmvfromBuf();
+
+		std::queue<std::string> const &getDataBuffer() const;
 
 
 	// msg format: USER username * * :full_name
@@ -78,12 +83,13 @@ class Client
 		bool _isRegistered;
 		bool _password;
 		int	_sockfd;
-		std::vector<std::string> _dataBuffer;
 		std::string _outGoingBuffer;
 		std::string _dest;
 		char _msg[1024];
 		unsigned long _joinedTime;
 		std::string _ipAddr;
-		// std::string msgBuffer;
+		
+		std::string _recvBuf;
+		std::queue<std::string> _execBuf;
 };
 #endif

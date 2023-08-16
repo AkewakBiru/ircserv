@@ -4,11 +4,13 @@
 #include <string>
 #include <vector>
 #include "responseCodes.hpp"
-#include "Client.hpp"
 #include "Server.hpp"
+#include "Client.hpp"
 #include "Parser.hpp"
 
 class Server;
+
+class Client;
 
 void NICK(Server &server, Client *client, std::vector<std::string> const &res);
 bool PASS(Server const &server, Client *client, std::vector<std::string> const &res);
