@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 21:31:57 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/17 19:11:35 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,8 @@ class Server
 		bool createSocket();
 		bool listenForConn() const;
 		bool handleRequest();
+
+		bool start();
 
 		bool deleteConnection(int fd);
 

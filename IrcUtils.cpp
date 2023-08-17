@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 21:45:52 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/17 19:35:29 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,9 @@ bool hasWhiteSpace(std::string const &str)
 }
 
 /*
-	** illegal chars -> A digit at 0 index
-	** 
+	** checks illegal Characters on a nickname
+	** illegal chars: A digit or '-' at 0 index
+	** non-digit, non-letter, or non (%x5B-60 / %x7B-7D) char at any index
 */
 bool hasIllegalChars(std::string const &arg)
 {
@@ -27,20 +28,25 @@ bool hasIllegalChars(std::string const &arg)
 		return (true);
 	for (size_t i=0; i<arg.length(); i++)
 	{
-		if ((arg[i] < 'A' || arg[i] > 125) && arg[i] != '-')
+		if (!std::isdigit(arg[i]) && (arg[i] < 'A' || arg[i] > 125) && arg[i] != '-')
 			return (true);
 	}
 	return (false);
 }
 
 /*
-	username can't have "\0\r\n@ " in it
+	** checks if a username has one of ("\0\r\n@\t") in it
 */
 bool userIllegalChars(std::string const &arg)
 {
-	return ( arg.find_first_of("\0\r\n@ ") != std::string::npos );
+	return ( arg.find_first_of("\0\r\n@\t") != std::string::npos );
 }
 
+/*
+	** returns the upperCase equivalent of a string's alpha chars
+	** if flag is set, changes the case of a few special chars as
+	** per RFC 2812 (for nickname)
+*/
 std::string toUpper(std::string const &arg, bool flag)
 {
 	std::string newStr(arg);
@@ -103,9 +109,9 @@ void sigHandle(int sig)
 
 void sendMsg(int fd, std::string msg)
 {
-	send(fd, msg.c_str(), msg.length(), 0);
+	if (send(fd, msg.c_str(), msg.length(), 0) == -1)
+		std::cerr << "send: " << strerror(errno) << std::endl;
 }
-
 
 bool isSpaces(std::string const &str)
 {
@@ -133,4 +139,32 @@ bool isValidCmd(std::string const &cmd, std::vector<std::string> const &cmdList)
 {
 	std::vector<std::string>::const_iterator it = (std::find(cmdList.begin(), cmdList.end(), cmd));
 	return (  it != cmdList.end() );
+}
+
+/*
+	** empty msg (msg with only one of or a combination of " \r\n\v\f\0" )
+	** and msg with bad char ('\0') in the middle of it gets dropped
+*/
+bool preParseInput(Client *client, char const *msg, ssize_t size)
+{
+	std::string tmp(msg);
+	if (tmp.find_first_not_of(" \r\n\v\f\0") == std::string::npos)
+		return (false);
+	
+	if (std::strchr(msg, '\0') && std::strchr(msg, '\0') - msg < size)
+	{
+		sendMsg(client->getFd(), genErrMsg(ERR_UNKNOWNCOMMAND, "*eee", "*", ERR_UNKNOWNCOMMAND_ILLEGAL));
+		return (false);
+	}
+	return (true);
+}
+
+bool checkPort(std::string arg)
+{
+	size_t i = 0;
+	while (i < arg.length() && std::isspace(arg[i]))
+		i++;
+	if (i < arg.length() && arg[i] == '+')
+		i++;
+	return ( arg.find_first_not_of("0123456789", i) == std::string::npos );
 }

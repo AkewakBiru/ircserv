@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 21:55:21 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/17 19:46:43 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,29 @@ void Server::cleanup()
 		delete (*it);
 		(*it) = NULL;
 	}
+}
+
+bool Server::start()
+{
+	try {
+		checkParams();
+	} catch(const std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return (EXIT_FAILURE);
+	}
+	setServCreationTime();
+	
+	if (!getServAddrInfo())
+		return (EXIT_FAILURE);
+	if (!createSocket())
+		return (EXIT_FAILURE);
+	if (!listenForConn())
+		return (EXIT_FAILURE);
+
+	std::cout << "Listening ......" << std::endl;
+
+	handleRequest();
+	return (true);
 }
 
 Server::~Server()
@@ -141,6 +164,7 @@ bool Server::getServAddrInfo(void)
 	** creates a tcp socket
 	** sets the socket to be reusable
 	** assigns it a port and an IP (bind())
+	** sets it to be non-blocking
 */
 bool Server::createSocket(void)
 {
@@ -152,19 +176,25 @@ bool Server::createSocket(void)
 		_servfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 		if (_servfd == -1)
 		{
-			std::cerr << "socket " << strerror(errno) << std::endl;
+			std::cerr << "socket: " << strerror(errno) << std::endl;
 			continue ;
 		}
 		if (setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)) == -1)
 		{
 			freeaddrinfo(_res);
-			std::cerr << "setsockopt " << strerror(errno) << std::endl;
+			std::cerr << "setsockopt: " << strerror(errno) << std::endl;
 			return (false);
 		}
 		if (bind(_servfd, p->ai_addr, p->ai_addrlen) == -1)
 		{
 			close(_servfd);
-			std::cerr << "bind " << strerror(errno) << std::endl;
+			std::cerr << "bind: " << strerror(errno) << std::endl;
+			continue ;
+		}
+		if (fcntl(_servfd, F_SETFL, O_NONBLOCK) == -1)
+		{
+			close(_servfd);
+			std::cerr << "fcntl: " << strerror(errno) << std::endl;
 			continue ;
 		}
 		break ;
@@ -240,7 +270,7 @@ bool Server::deleteConnection(int fd)
 bool Server::sendMsgAndCloseConnection(std::string const &msg, Client *client)
 {
 	std::cout << "Lost connection to " << client->getIpAddr() << " on socket " << client->getFd() << std::endl;
-	send(client->getFd(), msg.c_str(), msg.length(), 0);
+	sendMsg(client->getFd(), msg);
 	close(client->getFd());
 	deleteConnection(client->getFd());
 	return (true);
@@ -274,10 +304,9 @@ void Server::addNewClient(int fd, struct sockaddr_storage *client_addr)
 
 bool Server::handleRequest(void)
 {
-	fcntl(_servfd, F_SETFL, O_NONBLOCK);
 	char msg[512];
 	int polled_fds;
-	int data;
+	ssize_t data;
 	size_t i;
 
 	// add the server to the pfds vector
@@ -310,7 +339,7 @@ bool Server::handleRequest(void)
 					if (data <= 0)
 					{
 						if (data == 0)
-							send(_pfds[i].fd, (void *)"bye\r\n", 5, 0);
+							sendMsg(_pfds[i].fd, "bye\r\n");
 						else
 							std::cerr << "recv: " << strerror(errno) << std::endl;
 						// remove the fd not responding from the _pfds, clients and channel vector
@@ -323,6 +352,8 @@ bool Server::handleRequest(void)
 						msg[510] = '\r';
 						msg[511] = '\n';
 
+						if (!preParseInput(_clients[i - 1], msg, data))
+							continue ;
 						// adds msg to the dataBuffer
 						_clients[i - 1]->addToBuffer(msg);
 						processBuffer(_clients[i - 1]);
@@ -363,12 +394,10 @@ void Server::processBuffer(Client *client)
 		return ;
 	while (client->getDataBuffer().size())
 	{
-		try
-		{
+		try {
 			parser.parseInput(client->getDataBuffer().front());
 		}
-		catch (std::exception const &e)
-		{
+		catch (std::exception const &e) {
 			client->rmvfromBuf();
 			parser.resetRes();
 			sendMsg(client->getFd(), e.what());
@@ -546,7 +575,7 @@ void Server::sendWelcomingMsg(Client *client)
 	msg.append(":ircserv ").append(RPL_YOURHOST).append(" :Your host is ircserv, running version 10.0\n");
 	msg.append(":ircserv ").append(RPL_CREATED).append(" :This server was created ").append(_creationTime).append("\n");
 	msg.append(":ircserv ").append(RPL_MYINFO).append(" :ircserv 10.0\r\n");
-	send(client->getFd(), msg.c_str(), msg.length(), 0);
+	sendMsg(client->getFd(), msg);
 }
 
 void Server::setStatus(bool status)

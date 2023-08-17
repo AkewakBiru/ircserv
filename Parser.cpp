@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:26:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 21:04:54 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/17 15:57:48 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,9 @@ void Parser::parseInput(std::string arg)
 {
 	int i = 0, start = 0, end=0;
 
-	rtrim(arg, "\r\n");		
+	rtrim(arg, "\r\n");
+	if (arg.find_first_of("\v\n\r") != std::string::npos)
+		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNCOMMAND, "*", "*", ERR_UNKNOWNCOMMAND_ILLEGAL));
 	while (start < arg.length())
 	{
 		while (arg[start] == ' ')
