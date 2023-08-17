@@ -6,14 +6,14 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/17 19:46:43 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/17 21:40:25 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 Server::Server(std::string pass, int const port): _creationTime(""), _password(pass), \
-_port(port), _servfd(-1), _res(NULL), _fdCount(0), _pfds(0), _clients(0), _channels(0)
+_port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
 {
 	_status = RUNNING;
 	std::string cmds[] = { "NICK", "USER", "CAP", "PASS", "JOIN", "PRIVMSG", "PART", "KICK", "QUIT" };
@@ -379,20 +379,39 @@ bool Server::handleRequest(void)
 
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
-	if (!isValidCmd(res[1], _validCmds))
+	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS};
+
+	// cmd validity is checked for authenticated client only
+	if (!isValidCmd(toUpper(res[1], false), _validCmds))
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNCOMMAND, client->getNick(), res[1], ERR_UNKNOWNCOMMAND_DESC));
+
+	for (size_t i=0; i<4; i++)
+	{
+		if (_validCmds[i] == toUpper(res[1], false))
+		{
+			try {
+				(*funcs[i])(*this, client, res);
+			}
+			catch(const std::exception& e) {
+				(void) e;
+				throw ;
+			}
+			break ;
+		}
+	}
 	return ;
 }
 
-// any received msg will be put in a buffer, i will use splitter to find crlf & put the output in a queue
-// then dequeue and exec the cmds in the queue
+/*
+	** loops through the execBuffer queue and executes commands and dequeues it
+*/
 void Server::processBuffer(Client *client)
 {
 	Parser parser;
 
 	if (client->getDataBuffer().empty())
 		return ;
-	while (client->getDataBuffer().size())
+	while (client->getDataBuffer().size() && client->getState() == UP)
 	{
 		try {
 			parser.parseInput(client->getDataBuffer().front());
@@ -405,32 +424,34 @@ void Server::processBuffer(Client *client)
 		}
 		client->rmvfromBuf();
 		std::vector<std::string> const &res = parser.getRes();
+		
 		if (!isRegistered(client->getFd()))
 		{
 			if (std::time(0) - client->getJoinedTime() >= 60)
-				sendMsgAndCloseConnection(genServErrMsg("", client->getIpAddr(), "Registration Timeout"), client);
-			try
 			{
+				sendMsgAndCloseConnection(genServErrMsg("", client->getIpAddr(), "Registration Timeout"), client);
+				return ;
+			}
+			try {
 				registerUser(client, res);
 			}
-			catch(const std::exception& e)
-			{
+			catch(const std::exception& e) {
 				sendMsg(client->getFd(), e.what());
 			}
 		}
 		else
 		{
-			try
-			{
+			try {
 				executeCmd(client, res);
 			}
-			catch(const std::exception& e)
-			{
+			catch(const std::exception& e) {
 				sendMsg(client->getFd(), e.what());
 			}
 		}
 		parser.resetRes();
 	}
+	if (client->getState() == DOWN)
+		sendMsgAndCloseConnection("", client);
 }
 
 void Server::addClient(Client *client)
@@ -492,79 +513,31 @@ bool Server::isRegistered(int fd)
 
 bool Server::registerUser(Client *client, std::vector<std::string> const &res)
 {
+	std::string cmds[] = { "NICK", "USER", "CAP", "PASS" };
+	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = { &NICK, &USER, &CAP, &PASS };
 	std::string const &cmd = toUpper(res[1], false);
 
-	// if client has a correct password, nick and user, set their status as joined
-	if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)
-		client->setStatus(true);
-	// if (!client->hasPassword() && cmd != "PASS")
-	// {
-	// 	sendMsgAndCloseConnection(genServErrMsg("Password required. ", client->getIpAddr(), ERR_CMD_NOT_PASSWORD), client);
-	// 	return (true);
-	// }
-	if (cmd == "NICK" || cmd == "USER" || cmd == "PASS" || cmd == "CAP")
+	for (size_t i = 0; i < 4; i++)
 	{
-		if (cmd == "CAP")
+		if (cmds[i] == cmd)
 		{
-			try 
-			{
-				CAP(*this, client, res);
+			try {
+				(*funcs[i])(*this, client, res);
 			}
-			catch (std::exception const &e)
-			{
+			catch(const std::exception& e) {
 				(void) e;
 				throw ;
 			}
-		}
-		if (cmd == "PASS")
-		{
-			try
+			// if client has a correct password, nick and user, set their status as joined
+			if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)
 			{
-				if (!PASS(*this, client, res))
-				{
-					sendMsgAndCloseConnection(genServErrMsg(ERR_INCORRECT_PASSWORD, client->getIpAddr(), ERR_UNAUTHORIZED_ACCESS), client);
-					return (true);
-				}
+				client->setStatus(true);
+				sendWelcomingMsg(client);
 			}
-			catch (std::exception const &e)
-			{
-				(void)e;
-				throw ;
-			}
-		}
-		else if (cmd == "NICK")
-		{
-			try
-			{
-				NICK(*this, client, res);
-			}
-			catch (std::exception const &e)
-			{
-				(void)e;
-				throw ;
-			}
-		}
-		else if (cmd == "USER")
-		{
-			try
-			{
-				USER(*this, client, res);
-			}
-			catch (std::exception const &e)
-			{
-				(void)e;
-				throw ;
-			}
+			return (true);
 		}
 	}
-	else
-		throw std::invalid_argument(genErrMsg(ERR_NOTREGISTERED, "*", "", ERR_NOTREGISTERED_DESC));
-	if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)
-	{
-		client->setStatus(true);
-		sendWelcomingMsg(client);
-	}
-	return (true);
+	throw std::invalid_argument(genErrMsg(ERR_NOTREGISTERED, "*", "", ERR_NOTREGISTERED_DESC));
 }
 
 void Server::sendWelcomingMsg(Client *client)

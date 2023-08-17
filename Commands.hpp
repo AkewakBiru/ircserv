@@ -12,8 +12,8 @@ class Server;
 
 class Client;
 
-void NICK(Server &server, Client *client, std::vector<std::string> const &res);
-bool PASS(Server const &server, Client *client, std::vector<std::string> const &res);
-void USER(Server const &server, Client *client, std::vector<std::string> const &res);
-void CAP(Server const &server, Client *client, std::vector<std::string> const &res);
+bool NICK(Server &server, Client *client, std::vector<std::string> const &res);
+bool PASS(Server &server, Client *client, std::vector<std::string> const &res);
+bool USER(Server &server, Client *client, std::vector<std::string> const &res);
+bool CAP(Server &server, Client *client, std::vector<std::string> const &res);
 #endif

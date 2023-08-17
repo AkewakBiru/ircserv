@@ -6,13 +6,13 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 21:22:26 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/17 21:34:39 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Commands.hpp"
 
-bool PASS(Server const &server, Client *client, std::vector<std::string> const &res)
+bool PASS(Server &server, Client *client, std::vector<std::string> const &res)
 {
 	if (!client)
 		return (true);
@@ -20,15 +20,17 @@ bool PASS(Server const &server, Client *client, std::vector<std::string> const &
 		throw std::runtime_error(genErrMsg(ERR_ALREADYREGISTRED, client->getNick(), "", ERR_ALREADYREGISTRED_DESC));
 	else if (res.size() == 2)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
-	else if (res[2] == server.getPass())
+	// set client's state to DOWN
+	else if (res[2] != server.getPass())
 	{
-		client->setPassword(true);
-		return (true);
+		client->setState(DOWN);
+		throw std::invalid_argument(genServErrMsg(ERR_INCORRECT_PASSWORD, client->getIpAddr(), ERR_UNAUTHORIZED_ACCESS));
 	}
-	return (false);
+	client->setPassword(true);
+	return (true);
 }
 
-void NICK(Server &server, Client *client, std::vector<std::string> const &res)
+bool NICK(Server &server, Client *client, std::vector<std::string> const &res)
 {
 	std::string tmp;
 	if (client->getStatus())
@@ -44,16 +46,19 @@ void NICK(Server &server, Client *client, std::vector<std::string> const &res)
 	else if (server.getNicksFd(res[2]) != -1 && server.getNicksFd(res[2]) != client->getFd())
 		throw std::invalid_argument(genErrMsg(ERR_NICKNAMEINUSE, tmp, res[2], ERR_NICKNAMEINUSE_DESC));
 	client->setNick(res[2]);
+	return (true);
 }
 
-void USER(Server const &server, Client *client, std::vector<std::string> const &res)
+bool USER(Server &server, Client *client, std::vector<std::string> const &res)
 {
+	(void) server;
 	if (res.size() < 6)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
 	else if (userIllegalChars(res[2]))
 		throw std::invalid_argument(genErrMsg("", "*", res[1], ":user has illegal characters"));
 	client->setUserName(res[2]);
 	client->setFullName(res[5]);
+	return (true);
 }
 
 static bool isValidOption(std::string const &arg)
@@ -61,8 +66,9 @@ static bool isValidOption(std::string const &arg)
 	return (arg == "LS" || arg == "REQ" || arg == "ACK" || arg == "END" || arg == "LIST");
 }
 
-void CAP(Server const &server, Client *client, std::vector<std::string> const &res)
+bool CAP(Server &server, Client *client, std::vector<std::string> const &res)
 {
+	(void) server;
 	size_t resSize = res.size();
 	
 	if (resSize <= 2)
@@ -73,4 +79,5 @@ void CAP(Server const &server, Client *client, std::vector<std::string> const &r
 		sendMsg(client->getFd(), "CAP * LS :multi-prefix\r\n");
 	else if (res[2] == "REQ" && resSize >= 4)
 		sendMsg(client->getFd(), "CAP * ACK :multi-prefix\r\n");
+	return (true);
 }

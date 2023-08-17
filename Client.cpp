@@ -6,14 +6,14 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 21:57:07 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/17 21:14:49 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
 Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), \
-_sockfd(-1), _outGoingBuffer(""), _joinedTime(0), _ipAddr(""), _recvBuf("")
+_sockfd(-1), _outGoingBuffer(""), _joinedTime(0), _ipAddr(""), _recvBuf(""), _state(UP)
 {}
 
 Client::~Client()
@@ -92,14 +92,15 @@ bool Client::hasPassword() const
 	return (_password);
 }
 
-// void Client::setMsgBuffer(std::string msg)
-// {
-// 	_msgBuffer = msg;
-// }
-// std::string &Client::getMsgBuffer()
-// {
-// 	return (_msgBuffer);
-// }
+void Client::setState(bool state)
+{
+	_state = state;
+}
+
+bool Client::getState() const
+{
+	return (_state);
+}
 
 void Client::setOutgoingMsgBuffer(std::string msg)
 {

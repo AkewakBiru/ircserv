@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/16 16:24:05 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/17 21:31:30 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,12 @@
 // 	INVISIBLE,
 // 	WALLOPS,
 // };
+
+enum STATUS
+{
+	DOWN,
+	UP
+};
 
 class Client
 {
@@ -56,8 +62,8 @@ class Client
 		void setPassword(bool value);
 		bool hasPassword() const;
 		
-		void setMsgBuffer(std::string msg);
-		std::string &getMsgBuffer();
+		void setState(bool state);
+		bool getState() const;
 
 		void setOutgoingMsgBuffer(std::string msg);
 		std::string &getOutgoingMsgBuffer();
@@ -85,11 +91,12 @@ class Client
 		int	_sockfd;
 		std::string _outGoingBuffer;
 		std::string _dest;
-		char _msg[1024];
 		unsigned long _joinedTime;
 		std::string _ipAddr;
 		
 		std::string _recvBuf;
 		std::queue<std::string> _execBuf;
+		
+		bool _state;
 };
 #endif

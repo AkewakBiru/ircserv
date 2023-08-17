@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:26:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/17 15:57:48 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/17 21:32:16 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ std::vector<std::string> const &Parser::getRes(void) const
 
 void Parser::parseInput(std::string arg)
 {
-	int i = 0, start = 0, end=0;
+	size_t start = 0, end=0;
 
 	rtrim(arg, "\r\n");
 	if (arg.find_first_of("\v\n\r") != std::string::npos)
@@ -74,13 +74,4 @@ void Parser::parseInput(std::string arg)
 void Parser::resetRes(void)
 {
 	_res.clear();
-}
-
-size_t Parser::findMsgSize(char const *data)
-{
-	if (!data)
-		return (0);
-	if (std::strchr(data, '\n'))
-		return (std::strchr(data, '\n') - data);
-	return (std::strchr(data, '\0') - data);
 }

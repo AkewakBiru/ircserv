@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/17 19:11:35 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/17 21:40:18 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,6 @@ class Server
 		int _port;
 		int _servfd;
 		struct addrinfo *_res;
-		int _fdCount;
 		std::vector<pollfd> _pfds;
 
 		std::vector<Client *> _clients;
