@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
 #include "responseCodes.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
@@ -16,4 +17,5 @@ bool NICK(Server &server, Client *client, std::vector<std::string> const &res);
 bool PASS(Server &server, Client *client, std::vector<std::string> const &res);
 bool USER(Server &server, Client *client, std::vector<std::string> const &res);
 bool CAP(Server &server, Client *client, std::vector<std::string> const &res);
+bool MOTD(Server &server, Client *client, std::vector<std::string> const &res);
 #endif

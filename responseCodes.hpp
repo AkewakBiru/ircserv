@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:57:37 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/15 20:37:23 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/18 14:21:23 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,18 @@
 #define RPL_MYINFO "004"
 #define RPL_BOUNCE "005"
 
+// MOTD
+#define RPL_MOTDSTART "375"
+#define RPL_MOTDSTART_DESC ":- ircserv Message of the Day -"
+#define RPL_MOTD "372"
+#define RPL_ENDOFMOTD "376"
+#define RPL_ENDOFMOTD_DESC ":End of /MOTD command."
+
 // error msgs
+#define ERR_NOSUCHSERVER "402"
+#define ERR_NOSUCHSERVER_DESC ":No such server"
+#define ERR_NOMOTD "422"
+#define ERR_NOMOTD_DESC ":MOTD File is missing"
 #define ERR_NEEDMOREPARAMS "461"
 #define ERR_NEEDMOREPARAMS_DESC ":Not enough parameters"
 #define ERR_ALREADYREGISTRED "462"

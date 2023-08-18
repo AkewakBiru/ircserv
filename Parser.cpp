@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:26:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/17 21:32:16 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/18 15:47:07 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,9 @@ std::vector<std::string> const &Parser::getRes(void) const
 	return (_res);
 }
 
+/*
+	** splits msg using 0x20 and puts it in a vector
+*/
 void Parser::parseInput(std::string arg)
 {
 	size_t start = 0, end=0;

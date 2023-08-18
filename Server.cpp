@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/17 21:40:25 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/18 15:14:16 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ Server::Server(std::string pass, int const port): _creationTime(""), _password(p
 _port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
 {
 	_status = RUNNING;
-	std::string cmds[] = { "NICK", "USER", "CAP", "PASS", "JOIN", "PRIVMSG", "PART", "KICK", "QUIT" };
+	std::string cmds[] = { "NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "PART", "KICK", "QUIT" };
 	for (size_t i=0; i < sizeof(cmds) / sizeof(cmds[0]); i++) { _validCmds.push_back(cmds[i]); };
 }
 
@@ -232,7 +232,6 @@ bool Server::deleteConnection(int fd)
 			if ((*b)->getFd() == fd)
 			{
 				(*b)->setFd(-1);
-				delete(*b);
 				tmp->erase(b);
 				break ;
 			}
@@ -250,7 +249,7 @@ bool Server::deleteConnection(int fd)
 			break ;
 		}
 	}
-	
+
 	// remove from _pfds
 	for (std::vector<pollfd>::iterator it=_pfds.begin(); it!=_pfds.end(); it++)
 	{
@@ -379,13 +378,13 @@ bool Server::handleRequest(void)
 
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
-	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS};
+	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD};
 
 	// cmd validity is checked for authenticated client only
 	if (!isValidCmd(toUpper(res[1], false), _validCmds))
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNCOMMAND, client->getNick(), res[1], ERR_UNKNOWNCOMMAND_DESC));
 
-	for (size_t i=0; i<4; i++)
+	for (size_t i=0; i<5; i++)
 	{
 		if (_validCmds[i] == toUpper(res[1], false))
 		{
@@ -549,6 +548,10 @@ void Server::sendWelcomingMsg(Client *client)
 	msg.append(":ircserv ").append(RPL_CREATED).append(" :This server was created ").append(_creationTime).append("\n");
 	msg.append(":ircserv ").append(RPL_MYINFO).append(" :ircserv 10.0\r\n");
 	sendMsg(client->getFd(), msg);
+	
+	Parser parser;
+	parser.parseInput("MOTD");
+	MOTD(*this, client, parser.getRes());
 }
 
 void Server::setStatus(bool status)

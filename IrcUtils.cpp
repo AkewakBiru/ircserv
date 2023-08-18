@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/17 19:35:29 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/18 15:42:39 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,7 +153,7 @@ bool preParseInput(Client *client, char const *msg, ssize_t size)
 	
 	if (std::strchr(msg, '\0') && std::strchr(msg, '\0') - msg < size)
 	{
-		sendMsg(client->getFd(), genErrMsg(ERR_UNKNOWNCOMMAND, "*eee", "*", ERR_UNKNOWNCOMMAND_ILLEGAL));
+		sendMsg(client->getFd(), genErrMsg(ERR_UNKNOWNCOMMAND, "*", "*", ERR_UNKNOWNCOMMAND_ILLEGAL));
 		return (false);
 	}
 	return (true);
