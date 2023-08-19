@@ -6,21 +6,30 @@
 /*   By: sjadalla <sjadalla@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/19 18:34:04 by sjadalla         ###   ########.fr       */
+/*   Updated: 2023/08/19 20:12:19 by sjadalla         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
-#include "Client.hpp"
+
+#include <string>
 #include <vector>
 #include <map>
-#include <string>
 
 class Client;
 
 class Channel
 {
+    private:
+        std::string name;
+        std::map<char, bool> mode;
+        int max_users;
+        std::string topic;
+        std::string pwd;
+        std::vector<Client *> _members;
+        Client *_operator;
+        
     public:
         Channel(const std::string& _name);
         ~Channel();
@@ -37,15 +46,12 @@ class Channel
         std::string getPassword() const;
         void setMaxUsers(int count);
         int getMaxUsers() const;
+        
+        void kickUser(Client* _operator, Client* userToKick);
+        void inviteUser(Client* inviter, Client* invitee);
+        std::string execTopic(Client* requester, const std::string& newTopic = "");
+        void execMode(Client* requester, char modeKey, bool value = false);
 
-    private:
-        std::string name;
-        std::map<char, bool> mode;
-        int max_users;
-        std::string topic;
-        std::string pwd;
-        std::vector<Client *> _members;
-        Client *_operator;
 };
 
 #endif
