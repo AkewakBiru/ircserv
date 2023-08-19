@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: sjadalla <sjadalla@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/17 21:40:18 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/18 19:01:58 by sjadalla         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@
 #include <sstream>
 #include <iomanip>
 #include "Parser.hpp"
-#include "Client.hpp"
+#include "client.hpp"
 #include "Channel.hpp"
 #include "IrcUtils.hpp"
 #include "Commands.hpp"
