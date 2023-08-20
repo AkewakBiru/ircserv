@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sjadalla <sjadalla@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/18 19:01:58 by sjadalla         ###   ########.fr       */
+/*   Updated: 2023/08/20 18:32:04 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@
 #include <netdb.h>
 #include <string>
 #include <sstream>
+#include <ctime>
+#include <climits>
+#include <limits>
 #include <errno.h>
 #include <poll.h>
 #include <fcntl.h>

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sjadalla <sjadalla@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:07:13 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/19 18:47:11 by sjadalla         ###   ########.fr       */
+/*   Updated: 2023/08/20 18:32:27 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <algorithm>
 
 Channel::Channel(const std::string& _name) : name(_name), mode(), max_users(1000),
-      topic(""), pwd(""), _members(), _operator(nullptr)
+      topic(""), pwd(""), _members(), _operator(0)
 {
     mode['o'] = false;  // channel operator
     mode['k'] = false;  // channel password (key)

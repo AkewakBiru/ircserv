@@ -6,12 +6,13 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 19:54:40 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/17 21:30:28 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/20 18:29:28 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 #include "IrcUtils.hpp"
+#include <signal.h>
 
 // basic socket communication (server)
 int main(int ac, char **av)
@@ -28,7 +29,9 @@ int main(int ac, char **av)
 	}
 	Server Server(av[2], atoi(av[1]));
 	getServerInstance(&Server);
-	struct sigaction sa = { {sigHandle}, 0, 0};
+	struct sigaction sa;
+	sa.sa_flags = 0;
+	sa.sa_handler = sigHandle;
 	sigemptyset(&sa.sa_mask);
 	sigaction(SIGINT, &sa, 0);
 	sigaction(SIGQUIT, &sa, 0);

@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/18 15:19:08 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/20 16:53:49 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,10 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 	
 	file.open("MOTD", std::ios::in);
 	if (res.size() == 3 && res[2] != "ircserv")
+	{
+		file.close();
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHSERVER, client->getNick(), res[2], ERR_NOSUCHSERVER_DESC));
+	}
 	else if (!file.is_open())
 		throw std::invalid_argument(genErrMsg(ERR_NOMOTD, "*", "*", ERR_NOMOTD_DESC));
 	buf << file.rdbuf();
