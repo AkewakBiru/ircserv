@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/18 15:14:16 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/26 15:43:11 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,6 +320,8 @@ bool Server::handleRequest(void)
 			std::cerr << "poll: " << strerror(errno) << std::endl;
 			return (EXIT_FAILURE);
 		}
+		if (polled_fds == 0)
+			continue ;
 		for (i=0; i<_pfds.size(); i++)
 		{
 			// is someone ready to read from the created sockets
