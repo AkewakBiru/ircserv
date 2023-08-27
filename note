@@ -3,8 +3,7 @@
 
 /// responseCodes header -> Add preprocessor constants for wrong command alert (just like the ones i defined) (for the commands you are implementing)
 
-/// parser -> returns a vector which has at least 2 items in it {"ignore the 1st item", "cmd", "params"} (line 310, server.cpp, use the var)
-				use it for checking if the command you are implementing has correct params.
+/// parser -> returns a vector which has at least 2 items in it {"ignore the 1st item", "cmd", "params"}
 
 /// client -> when doing privmsg command -> put the message that is intended to be sent inside the outGoingBuffer var and put the destination inside the _dest var.
 
