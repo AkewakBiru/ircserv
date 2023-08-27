@@ -3,19 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/26 15:43:11 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/08/27 13:42:42 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
+bool Server::m_state = RUNNING;
+
 Server::Server(std::string pass, int const port): _creationTime(""), _password(pass), \
 _port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
 {
-	_status = RUNNING;
 	std::string cmds[] = { "NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "PART", "KICK", "QUIT" };
 	for (size_t i=0; i < sizeof(cmds) / sizeof(cmds[0]); i++) { _validCmds.push_back(cmds[i]); };
 }
@@ -46,6 +47,7 @@ void Server::cleanup()
 
 bool Server::start()
 {
+	signalHandler();
 	try {
 		checkParams();
 	} catch(const std::exception& e) {
@@ -53,7 +55,6 @@ bool Server::start()
 		return (EXIT_FAILURE);
 	}
 	setServCreationTime();
-	
 	if (!getServAddrInfo())
 		return (EXIT_FAILURE);
 	if (!createSocket())
@@ -141,6 +142,8 @@ int Server::getServFd() const
 */
 bool Server::getServAddrInfo(void)
 {
+	if (Server::m_state == STOPPED)
+		return (false);
 	struct addrinfo hints;
 
 	std::memset(&hints, 0, sizeof(hints));
@@ -173,6 +176,11 @@ bool Server::createSocket(void)
 
 	for (p = _res; p != NULL; p = p->ai_next)
 	{
+		if (Server::m_state == STOPPED)
+		{
+			freeaddrinfo(_res);
+			return (false);
+		}
 		_servfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 		if (_servfd == -1)
 		{
@@ -214,6 +222,8 @@ bool Server::createSocket(void)
 */
 bool Server::listenForConn(void) const
 {
+	if (Server::m_state == STOPPED)
+		return (false);
 	if (listen(_servfd, std::numeric_limits<int>::max()) == -1)
 	{
 		std::cerr << "Listen " << strerror(errno) << std::endl;
@@ -312,7 +322,7 @@ bool Server::handleRequest(void)
 	struct pollfd serv = {_servfd, POLLIN, 0};
 	_pfds.push_back(serv);
 
-	while (_status == RUNNING)
+	while (Server::m_state == RUNNING)
 	{
 		polled_fds = poll(&_pfds[0], _pfds.size(), -1);
 		if ( polled_fds == -1)
@@ -329,7 +339,10 @@ bool Server::handleRequest(void)
 			{
 				// is that someone the server
 				if (_pfds[i].fd == _servfd)
+				{
 					acceptNewConnection();
+					continue ;
+				}
 				else
 				{
 					std::memset(msg, 0, 512);
@@ -373,10 +386,10 @@ bool Server::handleRequest(void)
 					// after data is sent reset outgoingMsgBuffer
 			}
 		}
+		removeNonRespClients();
 	}
 	return (true);
 }
-
 
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
@@ -428,11 +441,6 @@ void Server::processBuffer(Client *client)
 		
 		if (!isRegistered(client->getFd()))
 		{
-			if (std::time(0) - client->getJoinedTime() >= 60)
-			{
-				sendMsgAndCloseConnection(genServErrMsg("", client->getIpAddr(), "Registration Timeout"), client);
-				return ;
-			}
 			try {
 				registerUser(client, res);
 			}
@@ -566,3 +574,18 @@ int Server::getStatus() const
 	return (_status);
 }
 
+/*
+	** non-registered and unresponding clients (timeout = 1 minute)
+	** will be removed from the server
+*/
+void Server::removeNonRespClients()
+{
+	for (size_t i=0; i<_clients.size(); i++)
+	{
+		if (!isRegistered(_clients[i]->getFd()) && std::time(0) - _clients[i]->getJoinedTime() >= 60)
+		{
+			sendMsgAndCloseConnection(genServErrMsg("", _clients[i]->getIpAddr(), "Registration Timeout"), _clients[i]);
+			i--;
+		}
+	}
+}

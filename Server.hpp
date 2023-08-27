@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/20 18:32:04 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/27 13:09:47 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,9 +90,12 @@ class Server
 		void addNewClient(int fd, struct sockaddr_storage *client_addr);
 
 		void cleanup();
+		void removeNonRespClients();
 
 		void processBuffer(Client *client);
 		void executeCmd(Client *client, std::vector<std::string> const &res);
+		
+		static bool m_state;
 
 	private:
 		std::string _creationTime;

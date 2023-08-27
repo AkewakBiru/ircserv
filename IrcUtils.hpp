@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   IrcUtils.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sjadalla <sjadalla@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/29 21:26:35 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/18 19:01:52 by sjadalla         ###   ########.fr       */
+/*   Updated: 2023/08/27 11:49:04 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ std::string toUpper(std::string const &arg, bool flag);
 std::string genErrMsg(char const *errCode, std::string optional, std::string cmd, std::string desc);
 std::string genServErrMsg(std::string nick, std::string ip, std::string desc);
 void sigHandle(int sig);
+void signalHandler(void);
 void sendMsg(int fd, std::string msg);
 Server *getServerInstance(Server *instance);
 bool isSpaces(std::string const &str);

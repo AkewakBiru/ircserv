@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/18 15:42:39 by abiru            ###   ########.fr       */
+/*   Updated: 2023/08/27 12:49:31 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,9 +102,19 @@ Server *getServerInstance(Server *instance)
 void sigHandle(int sig)
 {
 	(void) sig;
-	
-	getServerInstance(0)->setStatus(STOPPED);
+	Server::m_state = STOPPED;
 	std::cout << "\n:ircserv 10.0 has stopped" << std::endl;
+}
+
+void signalHandler(void)
+{
+	struct sigaction sa;
+	sa.sa_flags = 0;
+	sa.sa_handler = sigHandle;
+
+	sigemptyset(&sa.sa_mask);
+	sigaction(SIGINT, &sa, 0);
+	sigaction(SIGQUIT, &sa, 0);
 }
 
 void sendMsg(int fd, std::string msg)
