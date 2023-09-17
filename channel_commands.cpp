@@ -189,3 +189,94 @@ void ChannelCommands::manageMods(Channel& channel, Client& client, const std::ve
 
     channel.sendMessage(":" + client.getNickName() + " MODE " + channel.getName() + " " + mode_str + "\r\n", "");
 }
+
+
+//Central command function
+void executeCommand(std::vector<std::string> messages, User *user)
+{
+    // Get the command from the messages vector
+    std::string message = messages[0];
+
+    // Check if the message is a valid command
+    if (!isCommand(message))
+    {
+        // Send an error message if the command is unknown
+        irc::Server::serverInstance->sendMsg(user->getUserFd(), ":ASY 421, Unknown command\r\n");
+        return;
+    }
+
+    // Handle general commands
+    if (message == "NICK")
+    {
+        handle_nickname(user, messages);
+        return;
+    }
+    else if (message == "PASS")
+    {
+        handle_pass(user, messages);
+        return;
+    }
+    else if (message == "USER")
+    {
+        handle_user(user, messages);
+        return;
+    }
+    else if (message == "CAP")
+    {
+        handle_cap(user, messages);
+        return;
+    }
+    else if (message == "MOTD")
+    {
+        handle_motd(user);
+        return;
+    }
+
+    // Get the channel object based on the message recipient
+    Channel *channel = irc::Server::serverInstance->getChannel(messages[1]);
+
+    // If the command is INVITE, retrieve the channel object from messages[2]
+    if (message == "INVITE")
+        channel = irc::Server::serverInstance->getChannel(messages[2]);
+
+    // Check if the message is a WHOIS or MODE command targeting the FT_irc_server
+    if (server_messages(messages) == true)
+        return;
+
+    // Handle channel-specific commands
+    if (channel != nullptr)
+    {
+        if (message == "JOIN")
+        {
+            channel->join(user, messages);
+        }
+        else if (message == "PART")
+        {
+            channel->part(user, messages);
+        }
+        else if (message == "MODE")
+        {
+            channel->mode(user, messages);
+        }
+        else if (message == "TOPIC")
+        {
+            channel->topic(user, messages);
+        }
+        else if (message == "KICK")
+        {
+            channel->kick(user, messages);
+        }
+        else if (message == "INVITE")
+        {
+            channel->invite(user, messages);
+        }
+        else if (message == "PRIVMSG")
+        {
+            channel->privmsg(user, messages);
+        }
+    }
+    else
+    {
+        irc::Server::serverInstance->sendMsg(user->getUserFd(), ":ASY 442, You're not on that channel\r\n");
+    }
+}

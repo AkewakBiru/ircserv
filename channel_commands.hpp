@@ -19,6 +19,7 @@ public:
     void kick(Channel& channel, Client& kicker, Client& kickee);
     void setTopic(Channel& channel, Client& client, const std::vector<std::string>& messages);
     void manageMods(Channel& channel, Client& client, const std::vector<std::string>& messages);
+    void executeCommand(std::vector<std::string> messages, User *user);
 
 };
 
