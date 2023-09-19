@@ -1,4 +1,3 @@
-with the server:
 #include "channel_commands.hpp"
 #include "Server.hpp"  
 
