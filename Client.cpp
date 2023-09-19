@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sjadalla <sjadalla@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/19 20:07:00 by sjadalla         ###   ########.fr       */
+/*   Updated: 2023/09/19 12:09:07 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "client.hpp"
+#include "Client.hpp"
 
 Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), \
 _sockfd(-1), _outGoingBuffer(""), _joinedTime(0), _ipAddr(""), _recvBuf(""), _state(UP)
