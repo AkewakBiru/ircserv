@@ -6,7 +6,7 @@
 #include <fstream>
 #include "responseCodes.hpp"
 #include "Server.hpp"
-#include "client.hpp"
+#include "Client.hpp"
 #include "Parser.hpp"
 
 class Server;
