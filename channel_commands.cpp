@@ -4,21 +4,22 @@
 ChannelCommands::ChannelCommands() {}
 
 ChannelCommands::~ChannelCommands() {}
-
 void ChannelCommands::invite(Channel& channel, Client& inviter, Client& invitee)
 {
-
+    // Check if the channel is in invite-only mode and if the inviter is not an operator
     if (channel.getMode('i') && !inviter.is_op(channel))
         return;
 
     std::string nick = invitee.getNickName();
 
-    for (auto& user : Server::serverInstance->getUsers())
+    // Use the Server's getClients() function instead of serverInstance->getUsers()
+    for (auto& user : Server::getClients())
     {
         if (user->getNickName() == nick)
         {
             user->setInvited(channel, true);
-            Server::serverInstance->sendMsg(user->getUserFd(), ":" + inviter.getNickName() + " INVITE " + nick + " " + channel.getName() + "\r\n");
+            // Use the Server's sendToClient function to send the message
+            Server::sendToClient(user->getUserFd(), "You have been invited to the channel.");
             break;
         }
     }
@@ -42,8 +43,7 @@ void ChannelCommands::kick(Channel& channel, Client& kicker, Client& kickee)
             channel.sendMessage(kicker.getNickName() + " has kicked " + nick + " from " + channel.getName() + "!", "");
 
             // Send a message to the kicked user notifying that they have been removed from the channel.
-            Server::serverInstance->sendMsg(user->getUserFd(), ":" + user->getNickName() + " PART :" + channel.getName() + "\n");
-
+             Server::sendToClient(user->getUserFd(), "You have been kicked from the channel.");
             channel.removeUser(user); 
             break;
         }
@@ -53,40 +53,6 @@ void ChannelCommands::kick(Channel& channel, Client& kicker, Client& kickee)
 
 void ChannelCommands::setTopic(Channel& channel, Client& client, const std::vector<std::string>& messages)
 {
-    // Logic for the topic command based on provided logic
-    if (messages.size() < 3 || channel.getName() != messages[1])
-        return;
-
-    if (messages.size() == 2)
-    {
-        channel.sendMessage("IRC: 331 " + client.getNickName() + " " + channel.getName() + " " + channel.getTopic(), "");
-        return;
-    }
-
-    if (channel.getMode('t') && !client.is_op(channel))
-    {
-        Server::serverInstance->sendMsg(client.getUserFd(), ":ASY 482 " + client.getNickName() + " " + channel.getName() + " :You're not channel operator\r\n");
-        return;
-    }
-
-    unsigned int startIndex = (messages[2] == ":") ? 3 : 2;
-    std::string topic = "";
-
-    if (messages.size() > 3 || messages[2] != ":")
-    {
-        topic = messages[startIndex];
-        for (unsigned int i = startIndex + 1; i < messages.size(); i++)
-            topic += " " + messages[i];
-    }
-
-    channel.setTopic(topic);
-    channel.sendMessage("IRC: 332 " + client.getNickName() + " " + channel.getName() + " " + channel.getTopic(), "");
-}
-
-
-void ChannelCommands::manageMods(Channel& channel, Client& client, const std::vector<std::string>& messages)
-{
-    // Logic for the mode command based on provided logic
     bool mode_bool = false;
 
     if (messages.size() < 2 || channel.getName() != messages[1] || !client.is_op(channel))
@@ -109,7 +75,7 @@ void ChannelCommands::manageMods(Channel& channel, Client& client, const std::ve
             mode_str += std::to_string(channel.getMaxUsers());
         }
 
-        Server::serverInstance->sendMsg(client.getUserFd(), "324 " + client.getNickName() + " " + channel.getName() + " +" + mode_str + "\r\n");
+        Server::sendToClient(client.getUserFd(), "324 " + client.getNickName() + " " + channel.getName() + " +" + mode_str + "\r\n");
     }
 
     std::string mode = messages[2];
@@ -133,7 +99,7 @@ void ChannelCommands::manageMods(Channel& channel, Client& client, const std::ve
         else if (mode[i] == 'o' && messages.size() > 3)
         {
             std::string nick = messages[3];
-            for (auto& user : Server::serverInstance->getUsers())
+            for (auto& user : Server::getClients()) // Modified this line
             {
                 if (user->getNickName() == nick)
                 {
@@ -201,7 +167,7 @@ void executeCommand(std::vector<std::string> messages, User *user)
     if (!isCommand(message))
     {
         // Send an error message if the command is unknown
-        irc::Server::serverInstance->sendMsg(user->getUserFd(), ":ASY 421, Unknown command\r\n");
+        Server::sendToClient(user->getUserFd(), ": 421, Unknown command\r\n");
         return;
     }
 
@@ -233,11 +199,11 @@ void executeCommand(std::vector<std::string> messages, User *user)
     }
 
     // Get the channel object based on the message recipient
-    Channel *channel = irc::Server::serverInstance->getChannel(messages[1]);
+     Channel *channel = Server::getChannel(messages[1]);
 
     // If the command is INVITE, retrieve the channel object from messages[2]
     if (message == "INVITE")
-        channel = irc::Server::serverInstance->getChannel(messages[2]);
+         Channel *channel = Server::getChannel(messages[2]);
 
     // Check if the message is a WHOIS or MODE command targeting the FT_irc_server
     if (server_messages(messages) == true)
@@ -277,6 +243,6 @@ void executeCommand(std::vector<std::string> messages, User *user)
     }
     else
     {
-        irc::Server::serverInstance->sendMsg(user->getUserFd(), ":ASY 442, You're not on that channel\r\n");
+        Server::sendToClient(user->getUserFd(), ": 442, You're not on that channel\r\n");
     }
 }
