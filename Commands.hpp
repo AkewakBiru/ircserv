@@ -18,4 +18,6 @@ bool PASS(Server &server, Client *client, std::vector<std::string> const &res);
 bool USER(Server &server, Client *client, std::vector<std::string> const &res);
 bool CAP(Server &server, Client *client, std::vector<std::string> const &res);
 bool MOTD(Server &server, Client *client, std::vector<std::string> const &res);
+bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res);
+bool JOIN(Server &server, Client *client, std::vector<std::string> const &res);
 #endif

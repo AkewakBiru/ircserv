@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: sjadalla <sjadalla@student.42.fr>          +#+  +:+       +#+         #
+#    By: youssef <youssef@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/30 10:40:42 by abiru             #+#    #+#              #
-#    Updated: 2023/08/19 19:56:41 by sjadalla         ###   ########.fr        #
+#    Updated: 2023/09/19 12:27:13 by youssef          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ CXX = c++
 CXXFLAGS = -Wextra -Werror -Wall  -std=c++98
 # CXXFLAGS = -std=c++98
 
-SRCS = main.cpp Server.cpp Client.cpp Parser.cpp IrcUtils.cpp Channel.cpp Commands.cpp channel_commands.cpp
+SRCS = main.cpp Server.cpp Client.cpp Parser.cpp IrcUtils.cpp Channel.cpp Commands.cpp #channel_commands.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

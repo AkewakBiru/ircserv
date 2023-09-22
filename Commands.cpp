@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/27 19:52:15 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/23 00:18:28 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,10 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 	std::string strBuf;
 	size_t end = 0;
 
+	// for (std::vector<std::string>::const_iterator it = res.cbegin(); it != res.cend(); it++) {
+	// 	std::cout << *it << " ";
+	// }
+	
 	file.open("MOTD.conf", std::ios::in);
 	if (!file.is_open())
 		throw std::invalid_argument(genErrMsg(ERR_NOMOTD, "*", "*", ERR_NOMOTD_DESC));
@@ -138,5 +142,24 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 	if (strBuf.size() && strBuf.size() <= 80)
 		sendMsg(client->getFd(), genErrMsg(RPL_MOTD, client->getNick(), ":-", strBuf.substr(0, strBuf.size())));
 	sendMsg(client->getFd(), genErrMsg(RPL_ENDOFMOTD, client->getNick(), "", RPL_ENDOFMOTD_DESC));
+	return (true);
+}
+
+bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res) {
+	(void) server;
+	(void) client;
+	(void) res;
+
+	for (std::vector<std::string>::const_iterator it = res.cbegin(); it != res.cend(); it++) {
+		std::cout << *it << " ";
+	}
+	std::cout << std::endl;
+	return (true);
+}
+
+bool JOIN(Server &server, Client *client, std::vector<std::string> const &res) {
+	(void) server;
+	(void) client;
+	(void) res;
 	return (true);
 }
