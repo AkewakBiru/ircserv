@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 20:58:26 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/23 22:41:11 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,12 +145,22 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 	return (true);
 }
 
+void	sendToRecipients(std::string formatedMessage, Client *client, Channel *channel) {
+	if (client)
+		client->setRecvMsgBuffer(formatedMessage);
+	else {
+		for (std::vector<Client *>::iterator it = channel->getMembers()->begin(); it != channel->getMembers()->end(); it++) {
+			(*it)->setRecvMsgBuffer(formatedMessage);
+		}
+	}
+}
+
 bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res)
 {
-	(void)server;
-	(void)client;
-	(void)res;
-	std::string recipient = NULL;
+	std::string recipientName;
+	Client *recipientClient = NULL;
+	Channel *recipientChannel = NULL;
+	std::string message, formatedMessage;
 
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NORECIPIENT, "*", res[1], ERR_NORECIPIENT_DESC));
@@ -162,22 +172,33 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 		{
 			if (res[2].compare((*it)->getName()) == 0)
 			{
-				recipient = (*it)->getName();
+				recipientChannel = *it;
+				recipientName = (*it)->getName();
 				break;
 			}
 		}
-		// if (!recipient)
-		// 	throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", res[1], ERR_CANNOTSENDTOCHAN_DESC));
+		if (!recipientChannel)
+			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", res[1], ERR_CANNOTSENDTOCHAN_DESC));
 	}
 	else
 	{
-		// channel = false;
+		for (std::vector<Client *>::const_iterator it = server.getClients().begin(); it != server.getClients().end(); it++) {
+			if (res[2].compare((*it)->getNick()) == 0)
+			{
+				recipientClient = *it;
+				recipientName = (*it)->getNick();
+				break;
+			}
+		if (!recipientClient)
+			throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "*", res[1], ERR_NOSUCHNICK_DESC));
+		}
 	}
-	for (std::vector<std::string>::const_iterator it = res.cbegin(); it != res.cend(); it++)
-	{
-		std::cout << *it << " ";
-	}
-	std::cout << std::endl;
+	for (std::vector<std::string>::const_iterator it = res.cbegin() + 3; it != res.cend(); it++)
+		message.append(*it);
+	if (message.at(0) != ':')
+		message.insert(1, ":");
+	formatedMessage = ":" + client->getNick() + "! " + client->getUserName() + "@" + client->getIpAddr() + " privmsg " + recipientName + " " + message;
+	sendToRecipients(formatedMessage, recipientClient, recipientChannel);
 	return (true);
 }
 
