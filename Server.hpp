@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 20:20:38 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/23 22:19:59 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,9 +100,6 @@ public:
 
 	void processBuffer(Client *client);
 	void executeCmd(Client *client, std::vector<std::string> const &res);
-
-	void sendToChannel(Client *sender);
-
 	static bool m_state;
 
 private:

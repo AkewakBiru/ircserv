@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 21:38:20 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/23 22:19:50 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -379,15 +379,11 @@ bool Server::handleRequest(void)
 			}
 			else if (_pfds[i].revents & POLLOUT && _pfds[i].fd != _servfd)
 			{
-				if (_clients[i - 1]->getOutgoingMsgBuffer().length() > 0)
+				while (_clients[i - 1]->getRecvMsgBuffer().size())
 				{
-					if (_clients[i - 1]->getMsgDest()[0] == '#')
-						sendToChannel(_clients[i - 1]);
-					else
-						sendMsg(getNicksFd(_clients[i - 1]->getMsgDest()), _clients[i - 1]->getOutgoingMsgBuffer());
+					sendMsg(_clients[i - 1]->getFd(), _clients[i - 1]->getRecvMsgBuffer().front());
+					_clients[i - 1]->rmvfromRcvBuf();
 				}
-				_clients[i - 1]->setOutgoingMsgBuffer("");
-				_clients[i - 1]->setMsgDest("");
 			}
 		}
 		removeNonRespClients();
@@ -395,19 +391,6 @@ bool Server::handleRequest(void)
 		removeClients();
 	}
 	return (true);
-}
-
-void Server::sendToChannel(Client *sender)
-{
-	for (std::vector<Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++)
-	{
-		if ((*it)->getName() == sender->getMsgDest())
-		{
-			std::vector<Client *> *members = (*it)->getMembers();
-			for (std::vector<Client *>::iterator it2 = members->begin(); it2 != members->end(); members++)
-				sendMsg((*it2)->getFd(), sender->getOutgoingMsgBuffer());
-		}
-	}
 }
 
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/19 12:07:07 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/23 22:19:31 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,66 +37,64 @@ enum STATUS
 
 class Client
 {
-	public:
-		Client();
-		~Client();
+public:
+	Client();
+	~Client();
 
-		void setFd(int fd);
-		int getFd() const;
+	void setFd(int fd);
+	int getFd() const;
 
-		void setNick(std::string const &nick);
-		std::string const &getNick(void) const;
-		
-		void setUserName(std::string const &user);
-		std::string const &getUserName() const;
+	void setNick(std::string const &nick);
+	std::string const &getNick(void) const;
 
-		void setFullName(std::string const &fullName);
-		std::string const &getFullName() const;
+	void setUserName(std::string const &user);
+	std::string const &getUserName() const;
 
-		void setJoinedTime(unsigned long time);
-		unsigned long getJoinedTime() const;
+	void setFullName(std::string const &fullName);
+	std::string const &getFullName() const;
 
-		void setStatus(bool status);
-		bool getStatus() const;
+	void setJoinedTime(unsigned long time);
+	unsigned long getJoinedTime() const;
 
-		void setPassword(bool value);
-		bool hasPassword() const;
-		
-		void setState(bool state);
-		bool getState() const;
+	void setStatus(bool status);
+	bool getStatus() const;
 
-		void setOutgoingMsgBuffer(std::string msg);
-		std::string &getOutgoingMsgBuffer();
+	void setPassword(bool value);
+	bool hasPassword() const;
 
-		void setMsgDest(std::string dest);
-		std::string &getMsgDest();
+	void setState(bool state);
+	bool getState() const;
 
-		void setIpAddr(struct sockaddr_storage *clientAddr);
-		std::string const &getIpAddr() const;
-		
-		void addToBuffer(std::string msg);
-		void rmvfromBuf();
+	void setRecvMsgBuffer(std::string msg);
+	std::queue<std::string> getRecvMsgBuffer() const;
 
-		std::queue<std::string> const &getDataBuffer() const;
+	void rmvfromRcvBuf();
 
+	void setMsgDest(std::string dest);
+	std::string &getMsgDest();
 
-	// msg format: USER username * * :full_name
-	//             NICK nick
-	private:
-		std::string _nick;
-		std::string _userName;
-		std::string _fullName;
-		bool _isRegistered;
-		bool _password;
-		int	_sockfd;
-		std::string _outGoingBuffer;
-		std::string _dest;
-		unsigned long _joinedTime;
-		std::string _ipAddr;
-		
-		std::string _recvBuf;
-		std::queue<std::string> _execBuf;
-		
-		bool _state;
+	void setIpAddr(struct sockaddr_storage *clientAddr);
+	std::string const &getIpAddr() const;
+
+	void addToBuffer(std::string msg);
+	void rmvfromBuf();
+	std::queue<std::string> const &getDataBuffer() const;
+
+private:
+	std::string _nick;
+	std::string _userName;
+	std::string _fullName;
+	bool _isRegistered;
+	bool _password;
+	int _sockfd;
+	std::string _dest;
+	unsigned long _joinedTime;
+	std::string _ipAddr;
+
+	std::string _recvBuf;
+	std::queue<std::string> _execBuf;
+	std::queue<std::string> _recvMsgBuffer;
+
+	bool _state;
 };
 #endif

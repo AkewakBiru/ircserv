@@ -3,18 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/19 12:09:07 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/23 22:19:11 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client(): _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false), \
-_sockfd(-1), _outGoingBuffer(""), _joinedTime(0), _ipAddr(""), _recvBuf(""), _state(UP)
-{}
+Client::Client() : _nick(""), _userName(""), _fullName(""), _isRegistered(false), _password(false),
+				   _sockfd(-1), _joinedTime(0), _ipAddr(""), _recvBuf(""), _state(UP)
+{
+}
 
 Client::~Client()
 {
@@ -61,7 +62,7 @@ std::string const &Client::getFullName() const
 {
 	return (_fullName);
 }
-		
+
 void Client::setJoinedTime(unsigned long time)
 {
 	_joinedTime = time;
@@ -102,14 +103,19 @@ bool Client::getState() const
 	return (_state);
 }
 
-void Client::setOutgoingMsgBuffer(std::string msg)
+void Client::setRecvMsgBuffer(std::string msg)
 {
-	_outGoingBuffer = msg;
+	_recvMsgBuffer.push(msg);
 }
 
-std::string &Client::getOutgoingMsgBuffer()
+std::queue<std::string> Client::getRecvMsgBuffer() const
 {
-	return (_outGoingBuffer);
+	return (_recvMsgBuffer);
+}
+
+void Client::rmvfromRcvBuf()
+{
+	_recvMsgBuffer.pop();
 }
 
 void Client::setMsgDest(std::string dest)
@@ -140,17 +146,17 @@ std::string const &Client::getIpAddr() const
 }
 
 /*
-	** adds recvd msg to _recvBuf & finds part of the msg that has CRLF,
-	** puts it in _execBuf.
-*/
+ ** adds recvd msg to _recvBuf & finds part of the msg that has CRLF,
+ ** puts it in _execBuf.
+ */
 void Client::addToBuffer(std::string msg)
 {
 	size_t pos = 0;
-	
+
 	if (isSpaces(msg))
-		return ;
+		return;
 	_recvBuf.append(msg);
-	while ( (pos = _recvBuf.find("\r\n")) != std::string::npos )
+	while ((pos = _recvBuf.find("\r\n")) != std::string::npos)
 	{
 		_execBuf.push(_recvBuf.substr(0, pos + 2));
 		_recvBuf.erase(0, pos + 2);
