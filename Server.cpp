@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 12:56:32 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/23 13:11:05 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -394,11 +394,12 @@ bool Server::handleRequest(void)
 			}
 		}
 		removeNonRespClients();
+		removeEmptyChannels();
 	}
 	return (true);
 }
 
-Channel Server::sendToChannel(Client *sender)
+void Server::sendToChannel(Client *sender)
 {
 	for (std::vector<Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++)
 	{
@@ -615,6 +616,18 @@ void Server::removeNonRespClients()
 		if (!isRegistered(_clients[i]->getFd()) && std::time(0) - _clients[i]->getJoinedTime() >= 60)
 		{
 			sendMsgAndCloseConnection(genServErrMsg("", _clients[i]->getIpAddr(), "Registration Timeout"), _clients[i]);
+			i--;
+		}
+	}
+}
+
+void Server::removeEmptyChannels()
+{
+	for (size_t i = 0; i < _channels.size(); i++)
+	{
+		if (!_channels[i]->getMembers()->size())
+		{
+			delete _channels[i];
 			i--;
 		}
 	}

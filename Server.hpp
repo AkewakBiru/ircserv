@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 12:52:09 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/23 13:11:11 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,11 +91,12 @@ public:
 
 	void cleanup();
 	void removeNonRespClients();
+	void removeEmptyChannels();
 
 	void processBuffer(Client *client);
 	void executeCmd(Client *client, std::vector<std::string> const &res);
 
-	Channel sendToChannel(Client *sender);
+	void sendToChannel(Client *sender);
 
 	static bool m_state;
 
