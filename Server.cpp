@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 00:29:10 by youssef          ###   ########.fr       */
+/*   Updated: 2023/09/23 12:56:32 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,31 +14,34 @@
 
 bool Server::m_state = RUNNING;
 
-Server::Server(std::string pass, int const port): _creationTime(""), _password(pass), \
-_port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
+Server::Server(std::string pass, int const port) : _creationTime(""), _password(pass),
+												   _port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
 {
-	std::string cmds[] = { "NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "PART", "KICK", "QUIT" };
-	for (size_t i=0; i < sizeof(cmds) / sizeof(cmds[0]); i++) { _validCmds.push_back(cmds[i]); };
+	std::string cmds[] = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "PART", "KICK", "QUIT"};
+	for (size_t i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
+	{
+		_validCmds.push_back(cmds[i]);
+	};
 }
 
 void Server::cleanup()
 {
 	// close fds
-	for (std::vector<pollfd>::iterator it=_pfds.begin(); it!=_pfds.end(); it++)
+	for (std::vector<pollfd>::iterator it = _pfds.begin(); it != _pfds.end(); it++)
 	{
 		close(it->fd);
 		it->fd = -1;
 	}
 
 	// delete clients
-	for (std::vector<Client *>::iterator it=_clients.begin(); it != _clients.end(); it++)
+	for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); it++)
 	{
-		delete(*it);
+		delete (*it);
 		(*it) = NULL;
 	}
 
 	// delete channels
-	for (std::vector<Channel *>::iterator it=_channels.begin(); it != _channels.end(); it++)
+	for (std::vector<Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++)
 	{
 		delete (*it);
 		(*it) = NULL;
@@ -48,9 +51,12 @@ void Server::cleanup()
 bool Server::start()
 {
 	signalHandler();
-	try {
+	try
+	{
 		checkParams();
-	} catch(const std::exception& e) {
+	}
+	catch (const std::exception &e)
+	{
 		std::cerr << e.what() << std::endl;
 		return (EXIT_FAILURE);
 	}
@@ -81,19 +87,19 @@ void Server::setServCreationTime()
 {
 	std::stringstream strTime;
 	time_t now = time(0);
-	std::tm* d_t = std::localtime(&now);
+	std::tm *d_t = std::localtime(&now);
 	char dayFormat[] = "%A";
-    char dayString[20];
+	char dayString[20];
 	char monthFormat[] = "%B";
-    char monthString[20];
+	char monthString[20];
 
-    std::strftime(dayString, sizeof(dayString), dayFormat, d_t);
-    std::strftime(monthString, sizeof(monthString), monthFormat, d_t);
+	std::strftime(dayString, sizeof(dayString), dayFormat, d_t);
+	std::strftime(monthString, sizeof(monthString), monthFormat, d_t);
 
-	strTime << dayString << " " << monthString << " " << std::setw(2) << std::setfill('0') \
-	<< d_t->tm_mday << " " << d_t->tm_year + 1900 << " at " << std::setw(2) << std::setfill('0') \
-	<< d_t->tm_hour << ":" << std::setw(2) << std::setfill('0') << d_t->tm_min << ":" << std::setw(2) \
-	<< std::setfill('0') << d_t->tm_sec;
+	strTime << dayString << " " << monthString << " " << std::setw(2) << std::setfill('0')
+			<< d_t->tm_mday << " " << d_t->tm_year + 1900 << " at " << std::setw(2) << std::setfill('0')
+			<< d_t->tm_hour << ":" << std::setw(2) << std::setfill('0') << d_t->tm_min << ":" << std::setw(2)
+			<< std::setfill('0') << d_t->tm_sec;
 	_creationTime = strTime.str();
 }
 
@@ -138,8 +144,8 @@ int Server::getServFd() const
 }
 
 /*
-	** sets _res with the server's addrinfos
-*/
+ ** sets _res with the server's addrinfos
+ */
 bool Server::getServAddrInfo(void)
 {
 	if (Server::m_state == STOPPED)
@@ -154,7 +160,7 @@ bool Server::getServAddrInfo(void)
 	std::stringstream sa;
 	sa << _port;
 	std::string strPort = sa.str();
-	
+
 	if (int status = getaddrinfo(NULL, strPort.c_str(), &hints, &_res) != 0)
 	{
 		std::cerr << "getaddrinfo" << gai_strerror(status);
@@ -164,11 +170,11 @@ bool Server::getServAddrInfo(void)
 }
 
 /*
-	** creates a tcp socket
-	** sets the socket to be reusable
-	** assigns it a port and an IP (bind())
-	** sets it to be non-blocking
-*/
+ ** creates a tcp socket
+ ** sets the socket to be reusable
+ ** assigns it a port and an IP (bind())
+ ** sets it to be non-blocking
+ */
 bool Server::createSocket(void)
 {
 	struct addrinfo *p;
@@ -185,7 +191,7 @@ bool Server::createSocket(void)
 		if (_servfd == -1)
 		{
 			std::cerr << "socket: " << strerror(errno) << std::endl;
-			continue ;
+			continue;
 		}
 		if (setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)) == -1)
 		{
@@ -197,15 +203,15 @@ bool Server::createSocket(void)
 		{
 			close(_servfd);
 			std::cerr << "bind: " << strerror(errno) << std::endl;
-			continue ;
+			continue;
 		}
 		if (fcntl(_servfd, F_SETFL, O_NONBLOCK) == -1)
 		{
 			close(_servfd);
 			std::cerr << "fcntl: " << strerror(errno) << std::endl;
-			continue ;
+			continue;
 		}
-		break ;
+		break;
 	}
 	if (p == NULL)
 	{
@@ -218,8 +224,8 @@ bool Server::createSocket(void)
 }
 
 /*
-	** listens for incoming connection
-*/
+ ** listens for incoming connection
+ */
 bool Server::listenForConn(void) const
 {
 	if (Server::m_state == STOPPED)
@@ -234,48 +240,48 @@ bool Server::listenForConn(void) const
 
 bool Server::deleteConnection(int fd)
 {
-	for (std::vector<Channel *>::iterator it=_channels.begin(); it != _channels.end(); it++)
+	for (std::vector<Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++)
 	{
 		std::vector<Client *> *tmp = (*it)->getMembers();
-		for (std::vector<Client *>::iterator b=tmp->begin(); b != tmp->end(); b++)
+		for (std::vector<Client *>::iterator b = tmp->begin(); b != tmp->end(); b++)
 		{
 			if ((*b)->getFd() == fd)
 			{
 				(*b)->setFd(-1);
 				tmp->erase(b);
-				break ;
+				break;
 			}
 		}
 	}
 
 	// remove from clients vector
-	for (std::vector<Client *>::iterator it=_clients.begin(); it != _clients.end(); it++)
+	for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); it++)
 	{
 		if ((*it)->getFd() == fd)
 		{
 			(*it)->setFd(-1);
-			delete(*it);
+			delete (*it);
 			_clients.erase(it);
-			break ;
+			break;
 		}
 	}
 
 	// remove from _pfds
-	for (std::vector<pollfd>::iterator it=_pfds.begin(); it!=_pfds.end(); it++)
+	for (std::vector<pollfd>::iterator it = _pfds.begin(); it != _pfds.end(); it++)
 	{
 		if (it->fd == fd)
 		{
 			it->fd = -1;
 			_pfds.erase(it);
-			break ;
+			break;
 		}
 	}
 	return (true);
 }
 
 /*
-	** 
-*/
+ **
+ */
 bool Server::sendMsgAndCloseConnection(std::string const &msg, Client *client)
 {
 	std::cout << "Lost connection to " << client->getIpAddr() << " on socket " << client->getFd() << std::endl;
@@ -290,7 +296,7 @@ void Server::acceptNewConnection()
 	struct sockaddr_storage clientAddr;
 	socklen_t cLen = sizeof(clientAddr);
 	int conn = accept(_servfd, (struct sockaddr *)&clientAddr, &cLen);
-	
+
 	if (conn == -1)
 		std::cerr << "accept: " << strerror(errno) << std::endl;
 	else
@@ -300,7 +306,7 @@ void Server::acceptNewConnection()
 void Server::addNewClient(int fd, struct sockaddr_storage *client_addr)
 {
 
-	struct pollfd newConnection = { fd, POLLIN | POLLOUT, 0};
+	struct pollfd newConnection = {fd, POLLIN | POLLOUT, 0};
 	_pfds.push_back(newConnection);
 
 	Client *client = new Client();
@@ -308,7 +314,7 @@ void Server::addNewClient(int fd, struct sockaddr_storage *client_addr)
 	std::cout << "Received connection from " << client->getIpAddr() << " on socket: " << fd << "\r\n";
 	client->setJoinedTime(std::time(0));
 	client->setFd(fd);
-	_clients.push_back(client);	
+	_clients.push_back(client);
 }
 
 bool Server::handleRequest(void)
@@ -325,14 +331,14 @@ bool Server::handleRequest(void)
 	while (Server::m_state == RUNNING)
 	{
 		polled_fds = poll(&_pfds[0], _pfds.size(), -1);
-		if ( polled_fds == -1)
+		if (polled_fds == -1)
 		{
 			std::cerr << "poll: " << strerror(errno) << std::endl;
 			return (EXIT_FAILURE);
 		}
 		if (polled_fds == 0)
-			continue ;
-		for (i=0; i<_pfds.size(); i++)
+			continue;
+		for (i = 0; i < _pfds.size(); i++)
 		{
 			// is someone ready to read from the created sockets
 			if (_pfds[i].revents & POLLIN)
@@ -341,13 +347,13 @@ bool Server::handleRequest(void)
 				if (_pfds[i].fd == _servfd)
 				{
 					acceptNewConnection();
-					continue ;
+					continue;
 				}
 				else
 				{
 					std::memset(msg, 0, 512);
 					data = recv(_pfds[i].fd, msg, 510, 0);
-					// here server reads data from the sockets and parses it, 
+					// here server reads data from the sockets and parses it,
 					// if syntax is right, performs op on it
 					// else sends proper error message
 					if (data <= 0)
@@ -357,7 +363,7 @@ bool Server::handleRequest(void)
 						else
 							std::cerr << "recv: " << strerror(errno) << std::endl;
 						// remove the fd not responding from the _pfds, clients and channel vector
-						std::cout << "Lost connection to " << _clients[i-1]->getIpAddr() << " on socket " << _pfds[i].fd << std::endl;
+						std::cout << "Lost connection to " << _clients[i - 1]->getIpAddr() << " on socket " << _pfds[i].fd << std::endl;
 						close(_pfds[i].fd);
 						deleteConnection(_pfds[i].fd);
 					}
@@ -367,7 +373,7 @@ bool Server::handleRequest(void)
 						msg[511] = '\n';
 
 						if (!preParseInput(_clients[i - 1], msg, data))
-							continue ;
+							continue;
 						// adds msg to the dataBuffer
 						_clients[i - 1]->addToBuffer(msg);
 						processBuffer(_clients[i - 1]);
@@ -378,12 +384,13 @@ bool Server::handleRequest(void)
 			else if (_pfds[i].revents & POLLOUT && _pfds[i].fd != _servfd)
 			{
 				if (_clients[i - 1]->getOutgoingMsgBuffer().length() > 0)
-					// if dest is nick
-					// send to the client
-					// if it is a channel
-					// send to all members in the channel
-					std::cout << "can send data\n";
-					// after data is sent reset outgoingMsgBuffer
+				{
+					if (_clients[i - 1]->getMsgDest()[0] == '#')
+						sendToChannel(_clients[i - 1]);
+					else
+						sendMsg(getNicksFd(_clients[i - 1]->getMsgDest()), _clients[i - 1]->getOutgoingMsgBuffer());
+				}
+				_clients[i - 1]->setOutgoingMsgBuffer("");
 			}
 		}
 		removeNonRespClients();
@@ -391,74 +398,90 @@ bool Server::handleRequest(void)
 	return (true);
 }
 
+Channel Server::sendToChannel(Client *sender)
+{
+	for (std::vector<Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++)
+	{
+		if ((*it)->getName() == sender->getMsgDest())
+		{
+			std::vector<Client *> *members = (*it)->getMembers();
+			for (std::vector<Client *>::iterator it2 = members->begin(); it2 != members->end(); members++)
+				sendMsg((*it2)->getFd(), sender->getOutgoingMsgBuffer());
+		}
+	}
+}
+
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
 	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG};
-
-	// for (std::vector<std::string>::const_iterator it = res.cbegin(); it != res.cend(); it++) {
-	// 		std::cout << "index :" << *it << ", ";
-	// 	}
-	// std::cout << std::endl;
 
 	// cmd validity is checked for authenticated client only
 	if (!isValidCmd(toUpper(res[1], false), _validCmds))
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNCOMMAND, client->getNick(), res[1], ERR_UNKNOWNCOMMAND_DESC));
 
-	for (size_t i=0; i<5; i++)
+	for (size_t i = 0; i < 7; i++)
 	{
 		if (_validCmds[i] == toUpper(res[1], false))
 		{
-			try {
+			try
+			{
 				(*funcs[i])(*this, client, res);
 			}
-			catch(const std::exception& e) {
-				(void) e;
-				throw ;
+			catch (const std::exception &e)
+			{
+				(void)e;
+				throw;
 			}
-			break ;
+			break;
 		}
 	}
-	return ;
+	return;
 }
 
 /*
-	** loops through the execBuffer queue and executes commands and dequeues it
-*/
+ ** loops through the execBuffer queue and executes commands and dequeues it
+ */
 void Server::processBuffer(Client *client)
 {
 	Parser parser;
 
 	if (client->getDataBuffer().empty())
-		return ;
+		return;
 	while (client->getDataBuffer().size() && client->getState() == UP)
 	{
-		try {
+		try
+		{
 			parser.parseInput(client->getDataBuffer().front());
 		}
-		catch (std::exception const &e) {
+		catch (std::exception const &e)
+		{
 			client->rmvfromBuf();
 			parser.resetRes();
 			sendMsg(client->getFd(), e.what());
-			continue ;
+			continue;
 		}
 		client->rmvfromBuf();
 		std::vector<std::string> const &res = parser.getRes();
-		
+
 		if (!isRegistered(client->getFd()))
 		{
-			try {
+			try
+			{
 				registerUser(client, res);
 			}
-			catch(const std::exception& e) {
+			catch (const std::exception &e)
+			{
 				sendMsg(client->getFd(), e.what());
 			}
 		}
 		else
 		{
-			try {
+			try
+			{
 				executeCmd(client, res);
 			}
-			catch(const std::exception& e) {
+			catch (const std::exception &e)
+			{
 				sendMsg(client->getFd(), e.what());
 			}
 		}
@@ -478,7 +501,7 @@ static bool isEqual(Client const *client, int fd)
 	return (fd == client->getFd());
 }
 
-std::vector<Client *>::iterator Server::findFd(std::vector<Client *>& client, int fd)
+std::vector<Client *>::iterator Server::findFd(std::vector<Client *> &client, int fd)
 {
 	for (std::vector<Client *>::iterator it = client.begin(); it != client.end(); ++it)
 	{
@@ -489,11 +512,11 @@ std::vector<Client *>::iterator Server::findFd(std::vector<Client *>& client, in
 }
 
 /*
-	** returns fd associated with a nick
-*/
+ ** returns fd associated with a nick
+ */
 ssize_t Server::getNicksFd(std::string nick)
 {
-	for (std::vector<Client *>::iterator it = _clients.begin(); it!=_clients.end(); it++)
+	for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); it++)
 	{
 		if ((*it)->getNick() == nick)
 			return ((*it)->getFd());
@@ -519,7 +542,7 @@ bool Server::isRegistered(int fd)
 		{
 			if ((*it)->getStatus())
 				return (true);
-			break ;
+			break;
 		}
 	}
 	return (false);
@@ -527,20 +550,22 @@ bool Server::isRegistered(int fd)
 
 bool Server::registerUser(Client *client, std::vector<std::string> const &res)
 {
-	std::string cmds[] = { "NICK", "USER", "CAP", "PASS" };
-	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = { &NICK, &USER, &CAP, &PASS };
+	std::string cmds[] = {"NICK", "USER", "CAP", "PASS"};
+	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS};
 	std::string const &cmd = toUpper(res[1], false);
 
 	for (size_t i = 0; i < 4; i++)
 	{
 		if (cmds[i] == cmd)
 		{
-			try {
+			try
+			{
 				(*funcs[i])(*this, client, res);
 			}
-			catch(const std::exception& e) {
-				(void) e;
-				throw ;
+			catch (const std::exception &e)
+			{
+				(void)e;
+				throw;
 			}
 			// if client has a correct password, nick and user, set their status as joined
 			if (client->hasPassword() && client->getUserName().length() > 0 && client->getNick().length() > 0)
@@ -563,7 +588,7 @@ void Server::sendWelcomingMsg(Client *client)
 	msg.append(":ircserv ").append(RPL_CREATED).append(" :This server was created ").append(_creationTime).append("\n");
 	msg.append(":ircserv ").append(RPL_MYINFO).append(" :ircserv 10.0\r\n");
 	sendMsg(client->getFd(), msg);
-	
+
 	Parser parser;
 	parser.parseInput("MOTD");
 	MOTD(*this, client, parser.getRes());
@@ -580,12 +605,12 @@ int Server::getStatus() const
 }
 
 /*
-	** non-registered and unresponding clients (timeout = 1 minute)
-	** will be removed from the server
-*/
+ ** non-registered and unresponding clients (timeout = 1 minute)
+ ** will be removed from the server
+ */
 void Server::removeNonRespClients()
 {
-	for (size_t i=0; i<_clients.size(); i++)
+	for (size_t i = 0; i < _clients.size(); i++)
 	{
 		if (!isRegistered(_clients[i]->getFd()) && std::time(0) - _clients[i]->getJoinedTime() >= 60)
 		{

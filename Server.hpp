@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/19 12:08:34 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/23 12:52:09 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,66 +50,68 @@ enum
 
 class Server
 {
-	public:
-		Server(std::string pass, int const port);
-		~Server();
-		void setPass(std::string &newPass);
-		int getPort() const;
-		std::string const &getPass() const;
-		void checkParams() const;
-		
-		void setServFd(int const fd);
-		int getServFd() const;
+public:
+	Server(std::string pass, int const port);
+	~Server();
+	void setPass(std::string &newPass);
+	int getPort() const;
+	std::string const &getPass() const;
+	void checkParams() const;
 
-		void setServCreationTime();
-		std::string &getServCreationTime();
+	void setServFd(int const fd);
+	int getServFd() const;
 
-		bool getServAddrInfo();
-		bool createSocket();
-		bool listenForConn() const;
-		bool handleRequest();
+	void setServCreationTime();
+	std::string &getServCreationTime();
 
-		bool start();
+	bool getServAddrInfo();
+	bool createSocket();
+	bool listenForConn() const;
+	bool handleRequest();
 
-		bool deleteConnection(int fd);
+	bool start();
 
-		void addClient(Client *client);
-		void removeClient(Client *client);
-		bool isRegistered(int fd);
-		bool registerUser(Client *client, std::vector<std::string> const &res);
-		std::vector<Client *>::iterator findFd(std::vector<Client *>& client, int fd);
-		ssize_t getNicksFd(std::string nick);
+	bool deleteConnection(int fd);
 
-		bool sendMsgAndCloseConnection(std::string const &msg, Client *client);
-		void sendWelcomingMsg(Client *client);
+	void addClient(Client *client);
+	void removeClient(Client *client);
+	bool isRegistered(int fd);
+	bool registerUser(Client *client, std::vector<std::string> const &res);
+	std::vector<Client *>::iterator findFd(std::vector<Client *> &client, int fd);
+	ssize_t getNicksFd(std::string nick);
 
-		void setStatus(bool status);
-		int getStatus() const;
+	bool sendMsgAndCloseConnection(std::string const &msg, Client *client);
+	void sendWelcomingMsg(Client *client);
 
-		void acceptNewConnection(void);
-		void addNewClient(int fd, struct sockaddr_storage *client_addr);
+	void setStatus(bool status);
+	int getStatus() const;
 
-		void cleanup();
-		void removeNonRespClients();
+	void acceptNewConnection(void);
+	void addNewClient(int fd, struct sockaddr_storage *client_addr);
 
-		void processBuffer(Client *client);
-		void executeCmd(Client *client, std::vector<std::string> const &res);
-		
-		static bool m_state;
+	void cleanup();
+	void removeNonRespClients();
 
-	private:
-		std::string _creationTime;
-		std::string _password;
-		int _port;
-		int _servfd;
-		struct addrinfo *_res;
-		std::vector<pollfd> _pfds;
+	void processBuffer(Client *client);
+	void executeCmd(Client *client, std::vector<std::string> const &res);
 
-		std::vector<Client *> _clients;
-		std::vector<Channel *> _channels;
-		
-		bool _status;
-		
-		std::vector<std::string> _validCmds;
+	Channel sendToChannel(Client *sender);
+
+	static bool m_state;
+
+private:
+	std::string _creationTime;
+	std::string _password;
+	int _port;
+	int _servfd;
+	struct addrinfo *_res;
+	std::vector<pollfd> _pfds;
+
+	std::vector<Client *> _clients;
+	std::vector<Channel *> _channels;
+
+	bool _status;
+
+	std::vector<std::string> _validCmds;
 };
 #endif
