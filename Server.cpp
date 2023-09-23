@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 20:53:49 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/23 21:38:20 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -387,6 +387,7 @@ bool Server::handleRequest(void)
 						sendMsg(getNicksFd(_clients[i - 1]->getMsgDest()), _clients[i - 1]->getOutgoingMsgBuffer());
 				}
 				_clients[i - 1]->setOutgoingMsgBuffer("");
+				_clients[i - 1]->setMsgDest("");
 			}
 		}
 		removeNonRespClients();
