@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 22:58:53 by youssef          ###   ########.fr       */
+/*   Updated: 2023/09/23 23:17:55 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,11 +94,11 @@ bool CAP(Server &server, Client *client, std::vector<std::string> const &res)
 	else if (!isValidOption(res[2]))
 		throw std::invalid_argument(genErrMsg(ERR_INVALIDCAPCMD, "*", res[2], ERR_INVALIDCAPCMD_DESC));
 	else if (res[2] == "LS" && (resSize == 3 || resSize == 4))
-		sendMsg(client->getFd(), "CAP * LS :multi-prefix\r\n");
+		client->setRecvMsgBuffer("CAP * LS :multi-prefix\r\n");
 	// request to a change in capability is replied with an ACK
 	// containing the list of capabilities that a client can do
 	else if (res[2] == "REQ" && resSize >= 4)
-		sendMsg(client->getFd(), "CAP * ACK :multi-prefix\r\n");
+		client->setRecvMsgBuffer("CAP * ACK :multi-prefix\r\n");
 	return (true);
 }
 
@@ -128,7 +128,7 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 	buf << file.rdbuf();
 	file.close();
 	strBuf = buf.str();
-	sendMsg(client->getFd(), genErrMsg(RPL_MOTDSTART, client->getNick(), "", RPL_MOTDSTART_DESC));
+	client->setRecvMsgBuffer(genErrMsg(RPL_MOTDSTART, client->getNick(), "", RPL_MOTDSTART_DESC));
 	while ((end = strBuf.find('\n')) != std::string::npos)
 	{
 		if (end > 80)
@@ -136,20 +136,23 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 			strBuf.erase(0, end + 1);
 			continue;
 		}
-		sendMsg(client->getFd(), genErrMsg(RPL_MOTD, client->getNick(), ":-", strBuf.substr(0, end)));
+		client->setRecvMsgBuffer(genErrMsg(RPL_MOTD, client->getNick(), ":-", strBuf.substr(0, end)));
 		strBuf.erase(0, end + 1);
 	}
 	if (strBuf.size() && strBuf.size() <= 80)
-		sendMsg(client->getFd(), genErrMsg(RPL_MOTD, client->getNick(), ":-", strBuf.substr(0, strBuf.size())));
-	sendMsg(client->getFd(), genErrMsg(RPL_ENDOFMOTD, client->getNick(), "", RPL_ENDOFMOTD_DESC));
+		client->setRecvMsgBuffer(genErrMsg(RPL_MOTD, client->getNick(), ":-", strBuf.substr(0, strBuf.size())));
+	client->setRecvMsgBuffer(genErrMsg(RPL_ENDOFMOTD, client->getNick(), "", RPL_ENDOFMOTD_DESC));
 	return (true);
 }
 
-void	sendToRecipients(std::string formatedMessage, Client *client, Channel *channel) {
+void sendToRecipients(std::string formatedMessage, Client *client, Channel *channel)
+{
 	if (client)
 		client->setRecvMsgBuffer(formatedMessage);
-	else {
-		for (std::vector<Client *>::iterator it = channel->getMembers()->begin(); it != channel->getMembers()->end(); it++) {
+	else
+	{
+		for (std::vector<Client *>::iterator it = channel->getMembers()->begin(); it != channel->getMembers()->end(); it++)
+		{
 			(*it)->setRecvMsgBuffer(formatedMessage);
 		}
 	}
@@ -182,7 +185,8 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 	}
 	else
 	{
-		for (std::vector<Client *>::const_iterator it = server.getClients().begin(); it != server.getClients().end(); it++) {
+		for (std::vector<Client *>::const_iterator it = server.getClients().begin(); it != server.getClients().end(); it++)
+		{
 			if (res[2].compare((*it)->getNick()) == 0)
 			{
 				recipientClient = *it;
@@ -214,7 +218,7 @@ bool QUIT(Server &server, Client *client, std::vector<std::string> const &res)
 {
 	(void)server;
 	(void)res;
-	sendMsg(client->getFd(), genServErrMsg(client->getNick(), client->getIpAddr(), "Quit: " + client->getNick()));
+	client->setRecvMsgBuffer(genServErrMsg(client->getNick(), client->getIpAddr(), "Quit: " + client->getNick()));
 	client->setState(DOWN);
 	return (true);
 }
