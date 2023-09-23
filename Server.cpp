@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 23:07:42 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/24 00:49:08 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -477,6 +477,10 @@ void Server::processBuffer(Client *client)
 		}
 		parser.resetRes();
 	}
+}
+
+void Server::addChannel(Channel *channel) {
+	_channels.push_back(channel);
 }
 
 void Server::addClient(Client *client)

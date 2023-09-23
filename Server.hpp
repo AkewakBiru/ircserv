@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 22:19:59 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/24 00:49:17 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ public:
 	std::vector<Client *> const &getClients() const;
 	std::vector<Channel *> const &getChannels() const;
 
+	void addChannel(Channel *channel);
 	void addClient(Client *client);
 	void removeClient(Client *client);
 	bool isRegistered(int fd);
