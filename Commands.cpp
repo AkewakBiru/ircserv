@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 22:41:11 by youssef          ###   ########.fr       */
+/*   Updated: 2023/09/23 22:58:53 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,15 +189,15 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 				recipientName = (*it)->getNick();
 				break;
 			}
+		}
 		if (!recipientClient)
 			throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "*", res[1], ERR_NOSUCHNICK_DESC));
-		}
 	}
 	for (std::vector<std::string>::const_iterator it = res.cbegin() + 3; it != res.cend(); it++)
-		message.append(*it);
+		message.append(*it + " ");
 	if (message.at(0) != ':')
-		message.insert(1, ":");
-	formatedMessage = ":" + client->getNick() + "! " + client->getUserName() + "@" + client->getIpAddr() + " privmsg " + recipientName + " " + message;
+		message.insert(0, ":");
+	formatedMessage = ":" + client->getNick() + "! " + client->getUserName() + "@" + client->getIpAddr() + " privmsg " + recipientName + " " + message + "\r\n";
 	sendToRecipients(formatedMessage, recipientClient, recipientChannel);
 	return (true);
 }
