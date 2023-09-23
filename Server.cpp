@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 22:19:50 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/23 23:07:42 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -447,7 +447,7 @@ void Server::processBuffer(Client *client)
 		{
 			client->rmvfromBuf();
 			parser.resetRes();
-			sendMsg(client->getFd(), e.what());
+			client->setRecvMsgBuffer(e.what());
 			continue;
 		}
 		client->rmvfromBuf();
@@ -461,7 +461,7 @@ void Server::processBuffer(Client *client)
 			}
 			catch (const std::exception &e)
 			{
-				sendMsg(client->getFd(), e.what());
+				client->setRecvMsgBuffer(e.what());
 			}
 		}
 		else
@@ -472,7 +472,7 @@ void Server::processBuffer(Client *client)
 			}
 			catch (const std::exception &e)
 			{
-				sendMsg(client->getFd(), e.what());
+				client->setRecvMsgBuffer(e.what());
 			}
 		}
 		parser.resetRes();
@@ -575,7 +575,7 @@ void Server::sendWelcomingMsg(Client *client)
 	msg.append(":ircserv ").append(RPL_YOURHOST).append(" :Your host is ircserv, running version 10.0\n");
 	msg.append(":ircserv ").append(RPL_CREATED).append(" :This server was created ").append(_creationTime).append("\n");
 	msg.append(":ircserv ").append(RPL_MYINFO).append(" :ircserv 10.0\r\n");
-	sendMsg(client->getFd(), msg);
+	client->setRecvMsgBuffer(msg);
 
 	Parser parser;
 	parser.parseInput("MOTD");
