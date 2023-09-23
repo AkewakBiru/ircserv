@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseCodes.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:57:37 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 15:17:10 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/24 01:28:31 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,16 @@
 #define ERR_CANNOTSENDTOCHAN_DESC ":Cannot send message. Channel not found."
 #define ERR_NOSUCHNICK "401"
 #define ERR_NOSUCHNICK_DESC ":No such nickname. User does not exist on this server."
+
+//JOIN
+#define ERR_INVALIDCHANNAME "448"
+#define ERR_INVALIDCHANNAME_DESC ":Cannot join channel. Channel name must start with a hash mark (#)."
+#define ERR_CHANNELISFULL "471"
+#define ERR_CHANNELISFULL_DESC ":Channel is full. It has reached its maximum user limit."
+#define ERR_INVITEONLYCHAN "473"
+#define ERR_INVITEONLYCHAN_DESC ":You must be invited to join invite-only channels."
+#define ERR_BADCHANNELKEY "475"
+#define ERR_BADCHANNELKEY_DESC ":Incorrect channel key. The correct password is required to join this channel."
 
 // error msgs
 #define ERR_NOSUCHSERVER "402"
