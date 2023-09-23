@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 00:18:28 by youssef          ###   ########.fr       */
+/*   Updated: 2023/09/23 15:14:21 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,7 +149,25 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 	(void) server;
 	(void) client;
 	(void) res;
+	std::string recipient = NULL;
 
+	if (res.size() < 3)
+		throw std::invalid_argument(genErrMsg(ERR_NORECIPIENT, "*", res[1], ERR_NORECIPIENT_DESC));
+	if (res.size() < 4)
+		throw std::invalid_argument(genErrMsg(ERR_NOTEXTTOSEND, "*", res[1], ERR_NOTEXTTOSEND_DESC));
+	if (res[2].at(0) == '#') {
+		for (std::vector<Channel *>::const_iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++) {
+			if (res[2].compare((*it)->getName()) == 0) {
+				recipient = (*it)->getName();
+				break;
+			}
+		}
+		if (!recipient)
+			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", res[1], ERR_CANNOTSENDTOCHAN_DESC));
+	}
+	else {
+		// channel = false;
+	}
 	for (std::vector<std::string>::const_iterator it = res.cbegin(); it != res.cend(); it++) {
 		std::cout << *it << " ";
 	}
