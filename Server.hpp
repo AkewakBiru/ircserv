@@ -6,7 +6,7 @@
 /*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 14:18:25 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/23 14:52:34 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,9 @@ public:
 	bool start();
 
 	bool deleteConnection(int fd);
+
+	std::vector<Client *> const &getClients() const;
+	std::vector<Channel *> const &getChannels() const;
 
 	void addClient(Client *client);
 	void removeClient(Client *client);

@@ -6,7 +6,7 @@
 /*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 14:03:18 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/23 14:54:50 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -416,6 +416,13 @@ void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
 	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG};
 
+	int i = 0;
+	for (std::vector<std::string>::const_iterator it = res.begin(); it != res.end(); it++) {
+		std::cout << "index " << i << ":" << *it << ", ";
+		i++;
+	}
+	std::cout << std::endl;
+	
 	// cmd validity is checked for authenticated client only
 	if (!isValidCmd(toUpper(res[1], false), _validCmds))
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNCOMMAND, client->getNick(), res[1], ERR_UNKNOWNCOMMAND_DESC));
@@ -631,4 +638,11 @@ void Server::removeEmptyChannels()
 			i--;
 		}
 	}
+}
+
+std::vector<Client *> const &Server::getClients() const {
+	return (_clients);
+}
+std::vector<Channel *> const &Server::getChannels() const {
+	return (_channels);
 }
