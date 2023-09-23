@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 23:25:34 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/24 01:30:51 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,9 +211,33 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 
 bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 {
-	(void)server;
-	(void)client;
-	(void)res;
+	Channel *channel = NULL;
+	std::string password;
+
+	if (res.size() < 3)
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+	if (res[2].at(0) != '#')
+		throw std::invalid_argument(genErrMsg(ERR_INVALIDCHANNAME, "*", res[1], ERR_INVALIDCHANNAME_DESC));
+	if (res.size() >= 4)
+		password = res[3];
+	for (std::vector<Channel *>::const_iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++) {
+		if (res[2].compare((*it)->getName()) == 0)
+		{
+			channel = *it;
+			break;
+		}
+	}
+	if (!channel) {
+		channel = new Channel(res[2]);
+		server.addChannel(channel);
+	}
+	if (channel->getMode('i'))
+		throw std::invalid_argument(genErrMsg(ERR_INVITEONLYCHAN, "*", res[1], ERR_INVITEONLYCHAN_DESC));
+	if (channel->getMembers()->size() >= static_cast<unsigned long>(channel->getMaxUsers()))
+		throw std::invalid_argument(genErrMsg(ERR_CHANNELISFULL, "*", res[1], ERR_CHANNELISFULL_DESC));
+	if (channel->getMode('k') && (res.size() < 4 || channel->getPassword().compare(password)))
+		throw std::invalid_argument(genErrMsg(ERR_BADCHANNELKEY, "*", res[1], ERR_BADCHANNELKEY_DESC));
+	channel->addUser(client);
 	return (true);
 }
 
