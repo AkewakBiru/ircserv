@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseCodes.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:57:37 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/18 14:21:23 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/23 15:17:10 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,17 @@
 #define RPL_MOTD "372"
 #define RPL_ENDOFMOTD "376"
 #define RPL_ENDOFMOTD_DESC ":End of /MOTD command."
+
+
+//PRIVMSG
+#define ERR_NORECIPIENT "411"
+#define ERR_NORECIPIENT_DESC ":No recipient given. PRIVMSG command requires a recipient."
+#define ERR_NOTEXTTOSEND "412"
+#define ERR_NOTEXTTOSEND_DESC ":No text to send. PRIVMSG command requires a message."
+#define ERR_CANNOTSENDTOCHAN "404"
+#define ERR_CANNOTSENDTOCHAN_DESC ":Cannot send message. Channel not found."
+#define ERR_NOSUCHNICK "401"
+#define ERR_NOSUCHNICK_DESC ":No such nickname. User does not exist on this server."
 
 // error msgs
 #define ERR_NOSUCHSERVER "402"
