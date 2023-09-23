@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 15:45:58 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/23 20:53:49 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ bool Server::m_state = RUNNING;
 Server::Server(std::string pass, int const port) : _creationTime(""), _password(pass),
 												   _port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
 {
-	std::array<std::string, 10> cmds = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "PART", "KICK", "QUIT"};
+	std::array<std::string, 10> cmds = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "PART", "KICK"};
 	for (size_t i = 0; i < cmds.size(); i++)
 	{
 		_validCmds.push_back(cmds[i]);
@@ -353,19 +353,15 @@ bool Server::handleRequest(void)
 				{
 					std::memset(msg, 0, 512);
 					data = recv(_pfds[i].fd, msg, 510, 0);
-					// here server reads data from the sockets and parses it,
-					// if syntax is right, performs op on it
-					// else sends proper error message
 					if (data <= 0)
 					{
 						if (data == 0)
 							sendMsg(_pfds[i].fd, "bye\r\n");
 						else
 							std::cerr << "recv: " << strerror(errno) << std::endl;
-						// remove the fd not responding from the _pfds, clients and channel vector
 						std::cout << "Lost connection to " << _clients[i - 1]->getIpAddr() << " on socket " << _pfds[i].fd << std::endl;
 						close(_pfds[i].fd);
-						deleteConnection(_pfds[i].fd);
+						_clients[i - 1]->setState(DOWN);
 					}
 					else
 					{
@@ -395,6 +391,7 @@ bool Server::handleRequest(void)
 		}
 		removeNonRespClients();
 		removeEmptyChannels();
+		removeClients();
 	}
 	return (true);
 }
@@ -414,7 +411,7 @@ void Server::sendToChannel(Client *sender)
 
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
-	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG};
+	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG, &QUIT};
 
 	int i = 0;
 	for (std::vector<std::string>::const_iterator it = res.begin(); it != res.end(); it++)
@@ -428,7 +425,7 @@ void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 	if (!isValidCmd(toUpper(res[1], false), _validCmds))
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNCOMMAND, client->getNick(), res[1], ERR_UNKNOWNCOMMAND_DESC));
 
-	for (size_t i = 0; i < 7; i++)
+	for (size_t i = 0; i < 8; i++)
 	{
 		if (_validCmds[i] == toUpper(res[1], false))
 		{
@@ -496,8 +493,6 @@ void Server::processBuffer(Client *client)
 		}
 		parser.resetRes();
 	}
-	if (client->getState() == DOWN)
-		sendMsgAndCloseConnection("", client);
 }
 
 void Server::addClient(Client *client)
@@ -637,16 +632,29 @@ void Server::removeEmptyChannels()
 		{
 			delete _channels[i];
 			_channels[i] = NULL;
+			_channels.erase(_channels.begin() + i);
 			i--;
 		}
 	}
-	_channels.erase(std::remove(_channels.begin(), _channels.end(), static_cast<Channel *>(NULL)), _channels.end());
+}
+
+void Server::removeClients()
+{
+	for (size_t i = 0; i < _clients.size(); i++)
+	{
+		if (_clients[i]->getState() == DOWN)
+		{
+			deleteConnection(_clients[i]->getFd());
+			i--;
+		}
+	}
 }
 
 std::vector<Client *> const &Server::getClients() const
 {
 	return (_clients);
 }
+
 std::vector<Channel *> const &Server::getChannels() const
 {
 	return (_channels);

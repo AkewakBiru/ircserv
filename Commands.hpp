@@ -20,4 +20,5 @@ bool CAP(Server &server, Client *client, std::vector<std::string> const &res);
 bool MOTD(Server &server, Client *client, std::vector<std::string> const &res);
 bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res);
 bool JOIN(Server &server, Client *client, std::vector<std::string> const &res);
+bool QUIT(Server &server, Client *client, std::vector<std::string> const &res);
 #endif

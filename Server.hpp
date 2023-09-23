@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 14:52:34 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/23 20:20:38 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ public:
 	void cleanup();
 	void removeNonRespClients();
 	void removeEmptyChannels();
+	void removeClients();
 
 	void processBuffer(Client *client);
 	void executeCmd(Client *client, std::vector<std::string> const &res);

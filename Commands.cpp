@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 15:14:21 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/23 20:58:26 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ bool NICK(Server &server, Client *client, std::vector<std::string> const &res)
 */
 bool USER(Server &server, Client *client, std::vector<std::string> const &res)
 {
-	(void) server;
+	(void)server;
 	if (client->getStatus())
 		throw std::runtime_error(genErrMsg(ERR_ALREADYREGISTRED, client->getNick(), "", ERR_ALREADYREGISTRED_DESC));
 	if (res.size() < 6)
@@ -82,13 +82,13 @@ static bool isValidOption(std::string const &arg)
 }
 
 /*
-	** sends CAP negotiation reply to a client
-*/
+ ** sends CAP negotiation reply to a client
+ */
 bool CAP(Server &server, Client *client, std::vector<std::string> const &res)
 {
-	(void) server;
+	(void)server;
 	size_t resSize = res.size();
-	
+
 	if (resSize <= 2)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
 	else if (!isValidOption(res[2]))
@@ -103,8 +103,8 @@ bool CAP(Server &server, Client *client, std::vector<std::string> const &res)
 }
 
 /*
-	** sends motd upon client authentication & request
-*/
+ ** sends motd upon client authentication & request
+ */
 bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 {
 	(void)server;
@@ -116,7 +116,7 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 	// for (std::vector<std::string>::const_iterator it = res.cbegin(); it != res.cend(); it++) {
 	// 	std::cout << *it << " ";
 	// }
-	
+
 	file.open("MOTD.conf", std::ios::in);
 	if (!file.is_open())
 		throw std::invalid_argument(genErrMsg(ERR_NOMOTD, "*", "*", ERR_NOMOTD_DESC));
@@ -129,12 +129,12 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 	file.close();
 	strBuf = buf.str();
 	sendMsg(client->getFd(), genErrMsg(RPL_MOTDSTART, client->getNick(), "", RPL_MOTDSTART_DESC));
-	while ( (end = strBuf.find('\n')) != std::string::npos )
+	while ((end = strBuf.find('\n')) != std::string::npos)
 	{
 		if (end > 80)
 		{
 			strBuf.erase(0, end + 1);
-			continue ;
+			continue;
 		}
 		sendMsg(client->getFd(), genErrMsg(RPL_MOTD, client->getNick(), ":-", strBuf.substr(0, end)));
 		strBuf.erase(0, end + 1);
@@ -145,39 +145,55 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 	return (true);
 }
 
-bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res) {
-	(void) server;
-	(void) client;
-	(void) res;
+bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res)
+{
+	(void)server;
+	(void)client;
+	(void)res;
 	std::string recipient = NULL;
 
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NORECIPIENT, "*", res[1], ERR_NORECIPIENT_DESC));
 	if (res.size() < 4)
 		throw std::invalid_argument(genErrMsg(ERR_NOTEXTTOSEND, "*", res[1], ERR_NOTEXTTOSEND_DESC));
-	if (res[2].at(0) == '#') {
-		for (std::vector<Channel *>::const_iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++) {
-			if (res[2].compare((*it)->getName()) == 0) {
+	if (res[2].at(0) == '#')
+	{
+		for (std::vector<Channel *>::const_iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++)
+		{
+			if (res[2].compare((*it)->getName()) == 0)
+			{
 				recipient = (*it)->getName();
 				break;
 			}
 		}
-		if (!recipient)
-			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", res[1], ERR_CANNOTSENDTOCHAN_DESC));
+		// if (!recipient)
+		// 	throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", res[1], ERR_CANNOTSENDTOCHAN_DESC));
 	}
-	else {
+	else
+	{
 		// channel = false;
 	}
-	for (std::vector<std::string>::const_iterator it = res.cbegin(); it != res.cend(); it++) {
+	for (std::vector<std::string>::const_iterator it = res.cbegin(); it != res.cend(); it++)
+	{
 		std::cout << *it << " ";
 	}
 	std::cout << std::endl;
 	return (true);
 }
 
-bool JOIN(Server &server, Client *client, std::vector<std::string> const &res) {
-	(void) server;
-	(void) client;
-	(void) res;
+bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
+{
+	(void)server;
+	(void)client;
+	(void)res;
+	return (true);
+}
+
+bool QUIT(Server &server, Client *client, std::vector<std::string> const &res)
+{
+	(void)server;
+	(void)res;
+	sendMsg(client->getFd(), genServErrMsg(client->getNick(), client->getIpAddr(), "Quit: " + client->getNick()));
+	client->setState(DOWN);
 	return (true);
 }
