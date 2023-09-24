@@ -56,7 +56,7 @@ class Channel
 
 		std::vector<Client *> const getOperators() const;
 		void addOperator(Client *client);
-        
+        bool Channel::isMember(Client* client);
 };
 
 #endif
