@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 00:49:08 by youssef          ###   ########.fr       */
+/*   Updated: 2023/09/24 17:21:59 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -646,4 +646,20 @@ std::vector<Client *> const &Server::getClients() const
 std::vector<Channel *> const &Server::getChannels() const
 {
 	return (_channels);
+}
+
+bool Server::clientExists(std::string nick) {
+	for (std::vector<Client *>::const_iterator it = getClients().begin(); it != getClients().end(); it++) {
+		if (nick.compare((*it)->getNick()) == 0)
+			return (true);
+	}
+	return (false);
+}
+
+bool Server::channelExists(std::string name) {
+	for (std::vector<Channel *>::const_iterator it = getChannels().begin(); it != getChannels().end(); it++) {
+		if (name.compare((*it)->getName()) == 0)
+			return (true);
+	}
+	return (false);
 }
