@@ -6,7 +6,7 @@
 /*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 14:46:06 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/24 15:06:01 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,7 @@ bool PASS(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
 	// set client's state to DOWN
 	else if (res[2] != server.getPass())
-	{
-		client->setState(DOWN);
-		throw std::invalid_argument(genServErrMsg(ERR_INCORRECT_PASSWORD, client->getIpAddr(), ERR_UNAUTHORIZED_ACCESS));
-	}
+		throw std::invalid_argument(genErrMsg(ERR_INCORRECT_PASSWORD, "", client->getIpAddr(), ERR_UNAUTHORIZED_ACCESS));
 	client->setPassword(true);
 	return (true);
 }
