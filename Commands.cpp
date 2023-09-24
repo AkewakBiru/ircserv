@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+
 #include "Commands.hpp"
 
 bool PASS(Server &server, Client *client, std::vector<std::string> const &res)
@@ -283,7 +284,6 @@ void INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 		//throw error that client is not operator
 	
 }
-
 
 void KICK(Server &server, Client *client, std::vector<std::string> const &res)
 {
