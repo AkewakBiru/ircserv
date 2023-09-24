@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sjadalla <sjadalla@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/19 20:12:19 by sjadalla         ###   ########.fr       */
+/*   Updated: 2023/09/24 14:35:40 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class Channel
         std::string topic;
         std::string pwd;
         std::vector<Client *> _members;
-        Client *_operator;
+        std::vector<Client *> _operators;
         static std::map<std::string, Channel*> allChannels;
 
     public:
@@ -53,6 +53,9 @@ class Channel
         std::string execTopic(Client* requester, const std::string& newTopic = "");
         void execMode(Client* requester, char modeKey, bool value = false);
         static Channel* getChannel(const std::string& channelName);
+
+		std::vector<Client *> const getOperators() const;
+		void addOperator(Client *client);
         
 };
 
