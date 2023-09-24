@@ -29,7 +29,8 @@ class Channel
         std::string pwd;
         std::vector<Client *> _members;
         Client *_operator;
-        
+        static std::map<std::string, Channel*> allChannels;
+
     public:
         Channel(const std::string& _name);
         ~Channel();
@@ -51,7 +52,8 @@ class Channel
         void inviteUser(Client* inviter, Client* invitee);
         std::string execTopic(Client* requester, const std::string& newTopic = "");
         void execMode(Client* requester, char modeKey, bool value = false);
-
+        static Channel* getChannel(const std::string& channelName);
+        
 };
 
 #endif

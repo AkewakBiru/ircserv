@@ -230,11 +230,11 @@ void executeCommand(std::vector<std::string> messages, User *user)
     }
 
     // Get the channel object based on the message recipient
-     Channel *channel = Server::getChannel(messages[1]);
+     Channel *channel = Channel::getChannel(messages[1]);
 
     // If the command is INVITE, retrieve the channel object from messages[2]
     if (message == "INVITE")
-         Channel *channel = Server::getChannel(messages[2]);
+         Channel *channel = Channel::getChannel(messages[2]);
 
     // Check if the message is a WHOIS or MODE command targeting the FT_irc_server
     if (server_messages(messages) == true)

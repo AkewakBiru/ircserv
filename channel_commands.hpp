@@ -3,7 +3,7 @@
 #define CHANNEL_COMMANDS_HPP
 #include "Channel.hpp"
 #include "Client.hpp"
-#include "server.hpp"
+#include "Server.hpp"
 #include <vector>
 #include <string>
 

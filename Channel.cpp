@@ -87,3 +87,12 @@ int Channel::getMaxUsers() const
 {
     return max_users;
 }
+
+std::map<std::string, Channel*> Channel::allChannels;
+
+Channel* Channel::getChannel(const std::string& channelName) {
+    if (allChannels.find(channelName) != allChannels.end()) {
+        return allChannels[channelName];
+    }
+    return nullptr;
+}
