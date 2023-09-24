@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 22:19:31 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/24 14:30:37 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include "IrcUtils.hpp"
+#include "Channel.hpp"
 
 // enum MODES
 // {
@@ -79,6 +80,8 @@ public:
 	void addToBuffer(std::string msg);
 	void rmvfromBuf();
 	std::queue<std::string> const &getDataBuffer() const;
+
+	bool isOperator(Channel *channel);
 
 private:
 	std::string _nick;

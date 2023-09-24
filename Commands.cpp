@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 12:54:41 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/24 15:06:01 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,7 @@ bool PASS(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
 	// set client's state to DOWN
 	else if (res[2] != server.getPass())
-	{
-		client->setState(DOWN);
-		throw std::invalid_argument(genServErrMsg(ERR_INCORRECT_PASSWORD, client->getIpAddr(), ERR_UNAUTHORIZED_ACCESS));
-	}
+		throw std::invalid_argument(genErrMsg(ERR_INCORRECT_PASSWORD, "", client->getIpAddr(), ERR_UNAUTHORIZED_ACCESS));
 	client->setPassword(true);
 	return (true);
 }
@@ -55,7 +52,8 @@ bool NICK(Server &server, Client *client, std::vector<std::string> const &res)
 	if (res[2] == client->getNick())
 		return (false);
 	client->setNick(res[2]);
-	client->setRecvMsgBuffer(":nick NICK :" + res[2] + "\r\n");
+	if (client->getStatus())
+		client->setRecvMsgBuffer(":nick NICK :" + res[2] + "\r\n");
 	return (true);
 }
 
@@ -234,6 +232,7 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 	{
 		channel = new Channel(res[2]);
 		server.addChannel(channel);
+		//add user to operators
 	}
 	if (channel->getMode('i'))
 		throw std::invalid_argument(genErrMsg(ERR_INVITEONLYCHAN, "*", res[1], ERR_INVITEONLYCHAN_DESC));
@@ -241,6 +240,9 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_CHANNELISFULL, "*", res[1], ERR_CHANNELISFULL_DESC));
 	if (channel->getMode('k') && (res.size() < 4 || channel->getPassword().compare(password)))
 		throw std::invalid_argument(genErrMsg(ERR_BADCHANNELKEY, "*", res[1], ERR_BADCHANNELKEY_DESC));
+	std::vector<Client *>::iterator iter = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), client);
+	if (iter != channel->getMembers()->end())
+		return (false);
 	channel->addUser(client);
 	// send a message to all members that a new client has joined
 	sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " JOIN :" + res[2] + "\r\n", 0, channel);
@@ -262,17 +264,19 @@ bool QUIT(Server &server, Client *client, std::vector<std::string> const &res)
  */
 bool NAMES(Server &server, Client *client, Channel *channel)
 {
+	(void) server;
 	std::string message = ":ircserv 353 " + client->getNick() + " = " + channel->getName() + ":";
 	std::vector<Client *> *members = channel->getMembers();
 	std::string chanop = "";
 	for (std::vector<Client *>::iterator it = members->begin(); it != members->end(); it++)
 	{
-		if ((*it)->is_op(channel))
+		if ((*it)->isOperator(channel))
 			chanop = (*it)->getNick();
 		else
 			message += (*it)->getNick();
 	}
 	message += chanop + "\r\n";
 	client->setRecvMsgBuffer(message);
-	client->setRecvMsgBuffer(":ircserv 366 " + client->getNick() + " " + channel->getName() + " :End of /NAMES list.");
+	client->setRecvMsgBuffer(":ircserv 366 " + client->getNick() + " " + channel->getName() + " :End of /NAMES list.\r\n");
+	return (true);
 }

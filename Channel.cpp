@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:07:13 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/20 18:32:27 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/24 14:39:01 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <algorithm>
 
 Channel::Channel(const std::string& _name) : name(_name), mode(), max_users(1000),
-      topic(""), pwd(""), _members(), _operator(0)
+      topic(""), pwd(""), _members(), _operators(0)
 {
     // Initialize channel modes to false
     mode['o'] = false;  // channel operator
@@ -99,4 +99,12 @@ Channel* Channel::getChannel(const std::string& channelName) {
         return allChannels[channelName];
     }
     return nullptr;// Return null if the channel is not found
+}
+
+std::vector<Client *> const Channel::getOperators() const {
+	return (_operators);
+}
+
+void Channel::addOperator(Client *client) {
+	_operators.push_back(client);
 }
