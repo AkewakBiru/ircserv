@@ -119,3 +119,24 @@ std::vector<Client *> const Channel::getOperators() const {
 void Channel::addOperator(Client *client) {
 	_operators.push_back(client);
 }
+
+void Channel::addInvitee(Client *invitee) {
+	_invitees.push_back(invitee->getFd());
+}
+std::vector<int> const &Channel::getInvitees() const {
+	return (_invitees);
+}
+
+bool Channel::isInvited(Client *client) {
+	return ( std::find(_invitees.begin(), _invitees.end(), client->getFd()) != _invitees.end() );
+}
+
+bool Channel::isMember(Client* client) {
+    // Iterate through the list of members in the channel
+    for (std::vector<Client *>::iterator it = _members.begin(); it != _members.end(); ++it) {
+        if (*it == client) {
+            return true; // Client is a member of the channel
+        }
+    }
+    return false; // Client is not a member of the channel
+}
