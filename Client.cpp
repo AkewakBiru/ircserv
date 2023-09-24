@@ -6,7 +6,7 @@
 /*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 14:38:14 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/24 15:54:34 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,6 +176,13 @@ void Client::rmvfromBuf()
 bool Client::isOperator(Channel *channel) {
 	std::vector<Client *>::const_iterator it = std::find(channel->getOperators().begin(), channel->getOperators().end(), this);
 	if (it != channel->getOperators().end())
+		return (true);
+	return (false);
+}
+
+bool Client::isMember(Channel *channel) {
+	std::vector<Client *>::const_iterator it = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), this);
+	if (it != channel->getMembers()->end())
 		return (true);
 	return (false);
 }

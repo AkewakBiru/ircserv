@@ -6,7 +6,7 @@
 /*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 14:35:40 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/24 16:47:02 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "Client.hpp"
 
 class Client;
 
@@ -30,6 +31,8 @@ class Channel
         std::vector<Client *> _members;
         std::vector<Client *> _operators;
         static std::map<std::string, Channel*> allChannels;
+
+		std::vector<int> _invitees;
 
     public:
         Channel(const std::string& _name);
@@ -56,7 +59,16 @@ class Channel
 
 		std::vector<Client *> const getOperators() const;
 		void addOperator(Client *client);
+<<<<<<< HEAD
         bool Channel::isMember(Client* client);
+=======
+
+		void addInvitee(Client *invitee);
+		std::vector<int> const &getInvitees() const;
+
+		bool isInvited(Client *client);
+        
+>>>>>>> 31b8a09e896d7131120fb20605990e1dfacf7a69
 };
 
 #endif

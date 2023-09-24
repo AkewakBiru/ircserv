@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 15:06:01 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/24 17:31:11 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,31 +172,17 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 		throw std::invalid_argument(genErrMsg(ERR_NOTEXTTOSEND, "*", res[1], ERR_NOTEXTTOSEND_DESC));
 	if (res[2].at(0) == '#')
 	{
-		for (std::vector<Channel *>::const_iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++)
-		{
-			if (res[2].compare((*it)->getName()) == 0)
-			{
-				recipientChannel = *it;
-				recipientName = (*it)->getName();
-				break;
-			}
-		}
+		recipientChannel = server.channelExists(res[2]);
 		if (!recipientChannel)
 			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", res[1], ERR_CANNOTSENDTOCHAN_DESC));
+		recipientName = recipientChannel->getName();
 	}
 	else
 	{
-		for (std::vector<Client *>::const_iterator it = server.getClients().begin(); it != server.getClients().end(); it++)
-		{
-			if (res[2].compare((*it)->getNick()) == 0)
-			{
-				recipientClient = *it;
-				recipientName = (*it)->getNick();
-				break;
-			}
-		}
+		recipientClient = server.clientExists(res[2]);
 		if (!recipientClient)
 			throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "*", res[1], ERR_NOSUCHNICK_DESC));
+		recipientName = recipientClient->getNick();
 	}
 	for (std::vector<std::string>::const_iterator it = res.cbegin() + 3; it != res.cend(); it++)
 		message.append(*it + " ");
@@ -220,21 +206,14 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 			throw std::invalid_argument(genErrMsg(ERR_INVALIDCHANNAME, "*", res[1], ERR_INVALIDCHANNAME_DESC));
 	if (res.size() >= 4)
 		password = res[3];
-	for (std::vector<Channel *>::const_iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++)
-	{
-		if (res[2].compare((*it)->getName()) == 0)
-		{
-			channel = *it;
-			break;
-		}
-	}
+	channel = server.channelExists(res[2]);
 	if (!channel)
 	{
 		channel = new Channel(res[2]);
 		server.addChannel(channel);
 		//add user to operators
 	}
-	if (channel->getMode('i'))
+	if (channel->getMode('i') && !channel->isInvited(client))
 		throw std::invalid_argument(genErrMsg(ERR_INVITEONLYCHAN, "*", res[1], ERR_INVITEONLYCHAN_DESC));
 	if (channel->getMembers()->size() >= static_cast<unsigned long>(channel->getMaxUsers()))
 		throw std::invalid_argument(genErrMsg(ERR_CHANNELISFULL, "*", res[1], ERR_CHANNELISFULL_DESC));
@@ -279,6 +258,30 @@ bool NAMES(Server &server, Client *client, Channel *channel)
 	client->setRecvMsgBuffer(message);
 	client->setRecvMsgBuffer(":ircserv 366 " + client->getNick() + " " + channel->getName() + " :End of /NAMES list.\r\n");
 	return (true);
+}
+
+void INVITE(Server &server, Client *client, std::vector<std::string> const &res) {
+	Client *invitee;
+	Channel *channel;
+
+	if (res.size() < 4)
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+	//check if client exists
+	invitee = server.clientExists(res[2]);
+	if (!invitee)
+		throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "nick " + client->getNick(), res[2], ERR_NOSUCHNICK_DESC));
+	//check if channel exists
+	channel = server.channelExists(res[3]);
+	if (!channel)
+		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, client->getNick(), res[3], ERR_NOSUCHCHANNEL_DESC));
+	std::vector<Client *>::const_iterator it3 = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), invitee);
+	if (it3 != channel->getMembers()->end())
+		throw std::invalid_argument(genErrMsg(ERR_USERSDISABLED, "nick " + client->getNick(), res[3], ERR_USERSDISABLED_DESC));
+	if (!client->isMember(channel))
+		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, client->getNick(), res[3], ERR_NOTONCHANNEL_DESC));
+	// if (channel.getMode('i') && !client->isOperator(channel))
+		//throw error that client is not operator
+	
 }
 
 

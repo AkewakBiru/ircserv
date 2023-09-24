@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 00:49:17 by youssef          ###   ########.fr       */
+/*   Updated: 2023/09/24 17:24:07 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,9 @@ public:
 	void processBuffer(Client *client);
 	void executeCmd(Client *client, std::vector<std::string> const &res);
 	static bool m_state;
+
+	Client *clientExists(std::string nick);
+	Channel *channelExists(std::string name);
 
 private:
 	std::string _creationTime;
