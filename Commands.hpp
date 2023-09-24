@@ -8,8 +8,11 @@
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Parser.hpp"
+#include "Channel.hpp"
 
 class Server;
+
+class Channel;
 
 class Client;
 

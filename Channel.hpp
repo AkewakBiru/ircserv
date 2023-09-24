@@ -6,7 +6,7 @@
 /*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 16:19:57 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/24 16:47:02 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,8 @@ class Channel
 
 		void addInvitee(Client *invitee);
 		std::vector<int> const &getInvitees() const;
+
+		bool isInvited(Client *client);
         
 };
 
