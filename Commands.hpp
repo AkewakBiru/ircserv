@@ -26,10 +26,10 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res);
 bool QUIT(Server &server, Client *client, std::vector<std::string> const &res);
 bool NAMES(Server &server, Client *client, Channel *channel);
 
-
 void INVITE(Server &server, Client *client, std::vector<std::string> const &res);
 void KICK(Server &server, Client *client, std::vector<std::string> const &res);
 void setTopic(Server &server, Client *client, std::vector<std::string> const &res);
+// void setTopic(Client* client, const std::vector<std::string> const &res);
 void manageMods(Server &server, Client *client, std::vector<std::string> const &res);
 void executeCommand(Server &server, Client *client, std::vector<std::string> const &res);
 #endif
