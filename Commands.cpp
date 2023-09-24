@@ -6,7 +6,7 @@
 /*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 14:24:06 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/24 14:46:06 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,6 +235,7 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 	{
 		channel = new Channel(res[2]);
 		server.addChannel(channel);
+		//add user to operators
 	}
 	if (channel->getMode('i'))
 		throw std::invalid_argument(genErrMsg(ERR_INVITEONLYCHAN, "*", res[1], ERR_INVITEONLYCHAN_DESC));
@@ -244,7 +245,7 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_BADCHANNELKEY, "*", res[1], ERR_BADCHANNELKEY_DESC));
 	std::vector<Client *>::iterator iter = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), client);
 	if (iter != channel->getMembers()->end())
-		return;
+		return (false);
 	channel->addUser(client);
 	// send a message to all members that a new client has joined
 	sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " JOIN :" + res[2] + "\r\n", 0, channel);
@@ -272,12 +273,13 @@ bool NAMES(Server &server, Client *client, Channel *channel)
 	std::string chanop = "";
 	for (std::vector<Client *>::iterator it = members->begin(); it != members->end(); it++)
 	{
-		if ((*it)->is_op(channel))
+		if ((*it)->isOperator(channel))
 			chanop = (*it)->getNick();
 		else
 			message += (*it)->getNick();
 	}
 	message += chanop + "\r\n";
 	client->setRecvMsgBuffer(message);
-	client->setRecvMsgBuffer(":ircserv 366 " + client->getNick() + " " + channel->getName() + " :End of /NAMES list.");
+	client->setRecvMsgBuffer(":ircserv 366 " + client->getNick() + " " + channel->getName() + " :End of /NAMES list.\r\n");
+	return (true);
 }
