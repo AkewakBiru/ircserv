@@ -6,7 +6,7 @@
 /*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 14:30:37 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/24 15:43:53 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,7 @@ public:
 	std::queue<std::string> const &getDataBuffer() const;
 
 	bool isOperator(Channel *channel);
+	bool isMember(Channel *channel);
 
 private:
 	std::string _nick;
