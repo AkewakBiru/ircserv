@@ -16,6 +16,7 @@
 Channel::Channel(const std::string& _name) : name(_name), mode(), max_users(1000),
       topic(""), pwd(""), _members(), _operator(0)
 {
+    // Initialize channel modes to false
     mode['o'] = false;  // channel operator
     mode['k'] = false;  // channel password (key)
     mode['t'] = false;  // topic settable by channel operator only
@@ -25,6 +26,7 @@ Channel::Channel(const std::string& _name) : name(_name), mode(), max_users(1000
 
 Channel::~Channel() {}
 
+// Function to get the list of members in the channel
 std::vector<Client *> *Channel::getMembers(void)
 {
     return &_members;
@@ -88,11 +90,13 @@ int Channel::getMaxUsers() const
     return max_users;
 }
 
+// Static map to hold all channel instances
 std::map<std::string, Channel*> Channel::allChannels;
 
+// Static function to get a channel by its name
 Channel* Channel::getChannel(const std::string& channelName) {
     if (allChannels.find(channelName) != allChannels.end()) {
         return allChannels[channelName];
     }
-    return nullptr;
+    return nullptr;// Return null if the channel is not found
 }
