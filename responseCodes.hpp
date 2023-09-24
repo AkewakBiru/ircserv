@@ -89,4 +89,7 @@
 #define ERR_NOTONCHANNEL "442"
 #define ERR_NOTONCHANNEL_DESC ":You're not on that channel"
 
+#define ERR_CHANOPRIVSNEEDED "482"
+#define ERR_USERNOTINCHANNEL "441"
+#define ERR_UNKNOWNMODE "472"
 #endif

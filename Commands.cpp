@@ -288,6 +288,7 @@ void INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 
 void KICK(Server &server, Client *client, std::vector<std::string> const &res)
 {
+	(void) server;
     // Check if enough arguments are provided
     if (res.size() < 3)
         throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
@@ -298,41 +299,50 @@ void KICK(Server &server, Client *client, std::vector<std::string> const &res)
 
     // Retrieve the channel object
     Channel *channel = Channel::getChannel(channelName);
-    if (channel == nullptr) 
+    if (channel == NULL) {
         throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", channelName, "No such channel"));
+	}
 
 	// Check if the client is actually on the channel
 	if (!channel->isMember(client)) 
 		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", channelName, "You're not on that channel"));
 
 	// Check if the client is an operator in the channel
-    if (!client->is_op(*channel)) {
+    if (!client->isOperator(channel)) {
         throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, "You're not channel operator"));
     }
 
+	// Declare and initialize userFound to false
+    bool userFound = false;
+
     // Loop through the channel members to find the user to kick
-    std::vector<Client *> users = channel->getMembers();
-    for (auto& user : users) {
-        if (user->getNickName() == nickToKick) {
-            // Notify the channel that the user has been kicked
-            channel->sendMessage(client->getNickName() + " has kicked " + nickToKick + " from " + channel->getName() + "!", ""); // ask
+   std::vector<Client *> *users = channel->getMembers();
+	for (std::vector<Client *>::iterator it = users->begin(); it != users->end(); ++it) {
+		Client *user = *it;
+		if (client->getNick() == nickToKick) {
+			// Notify the channel that the user has been kicked
+			sendToRecipients(client->getNick() + " has kicked " + nickToKick + " from " + channel->getName() + "!", 0, channel);
 
-            // Notify the kicked user
-            server.sendToClient(user->getUserFd(), "You have been kicked from the channel."); //ask
+			// Notify the kicked user
+			sendToRecipients("You have been kicked from the channel.", user, 0);
 
-            // Remove the user from the channel
-            channel->removeUser(user);
-            break;
-        }
+			// Remove the user from the channel
+			channel->removeUser(user);
+			// Set userFound to true and break the loop
+            userFound = true;
+			break;
+		}
+	}
 		
-    if (!userFound) 
+    if (!userFound) {
         throw std::invalid_argument(genErrMsg(ERR_USERNOTINCHANNEL, "*", nickToKick, "They aren't on that channel"));
-    }
+	}
 }
+
 
 void setTopic(Server &server, Client *client, std::vector<std::string> const &res)
 {
-
+	(void) server;
 	// Validate the input messages
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
@@ -349,8 +359,8 @@ void setTopic(Server &server, Client *client, std::vector<std::string> const &re
 		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", channelName, ERR_NOTONCHANNEL_DESC));
 
 	// Check if the client is an operator and if the topic is operator-only
-	if (channel->getMode('t') && !client->is_op(*channel))
-		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, ERR_CHANOPRIVSNEEDED_DESC));
+	if (channel->getMode('t') && !client->isOperator(channel))
+		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, ERR_CHANOPRIVSNEEDED));
 
 	// Extract the new topic from the messages
 	unsigned int startIndex = (res[2] == ":") ? 3 : 2;
@@ -368,12 +378,13 @@ void setTopic(Server &server, Client *client, std::vector<std::string> const &re
 	// Set the new topic
 	channel->setTopic(topic);
 	//send a confirmation message
-	server.sendToClient(client->getUserFd(), "IRC: 332 " + client->getNickName() + " " + channel->getName() + " " + channel->getTopic()); // ask
+	sendToRecipients("Topic for channel " + channel->getName() + " has been set to: " + channel->getTopic(), client, 0);
 }
 
 void manageMods(Server &server, Client *client, std::vector<std::string> const &res)
 {
 
+	(void) server;
 	// Check for minimum required parameters
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
@@ -389,7 +400,7 @@ void manageMods(Server &server, Client *client, std::vector<std::string> const &
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", res[1], "No such channel"));
 
 	// Check if the client is an operator
-	if (!client->is_op(*channel))
+	if (!client->isOperator(channel))
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", res[1], "You're not channel operator"));
 
 	// Extract the mode string from the messages
@@ -414,61 +425,62 @@ void manageMods(Server &server, Client *client, std::vector<std::string> const &
 			mode_bool = false;
 			mode_str += "-";
 		}
-		else if (mode[i] == 'o' && messages.size() > 3)
+		else if (mode[i] == 'o' && res.size() > 3)
 		{
-			std::string nick = messages[3];
+			std::string nick = res[3];
 			// Loop through all clients to find the one with the matching nickname
-			for (auto& user : Server::getClients()
+			std::vector<Client*> *members = channel->getMembers();
+			for (std::vector<Client*>::iterator it = members->begin(); it != members->end(); ++it)
 			{
-				// Set or unset the operator status for the user in the channel
-				if (user->getNickName() == nick)
+				Client* user = *it;
+				if (user->getNick() == nick)
 				{
-					user->setChannelOp(channel, mode_bool);
-					if (user->is_op(channel))
+					channel->setOperatorStatus(user, mode_bool);
+					if (user->isOperator(channel))
 						break;
 				}
 			}
 			// Update the channel's mode
-			channel.setMode('o', mode_bool);
+			channel->setMode('o', mode_bool);
 			mode_str += "o";
 			}
 		else if (mode[i] == 'i')
 			{
-				channel.setMode('i', mode_bool);
+				channel->setMode('i', mode_bool);
 				mode_str += "i";
 			}
 			else if (mode[i] == 't')
 			{
-				channel.setMode('t', mode_bool);
+				channel->setMode('t', mode_bool);
 				mode_str += "t";
 			}
-			else if (mode[i] == 'l' && messages.size() > 3)
+			else if (mode[i] == 'l' && res.size() > 3)
 			{
 				// Check if the limit is within a valid range
-				if (mode_bool && std::stoi(messages[3]) > 0 && std::stoi(messages[3]) < 1000)
+				if (mode_bool && std::stoi(res[3]) > 0 && std::stoi(res[3]) < 1000)
 				{
-					channel.setMaxUsers(std::stoi(messages[3]));
-					channel.setMode('l', true);
+					channel->setMaxUsers(std::stoi(res[3]));
+					channel->setMode('l', true);
 				}
 				else
 				{
-					channel.setMode('l', false);
-					channel.setMaxUsers(1000);
+					channel->setMode('l', false);
+					channel->setMaxUsers(1000);
 				}
 				mode_str += "l";
 			}
-			else if (mode[i] == 'k' && messages.size() > 3)
+			else if (mode[i] == 'k' && res.size() > 3)
 			{
 				// Check if a password is provided
-				if (mode_bool && !messages[3].empty())
+				if (mode_bool && !res[3].empty())
 				{
-					channel.setMode('k', true);
-					channel.setPassword(messages[3]);
+					channel->setMode('k', true);
+					channel->setPassword(res[3]);
 				}
 				else
 				{
-					channel.setMode('k', false);
-					channel.setPassword("");
+					channel->setMode('k', false);
+					channel->setPassword("");
 				}
 				mode_str += "k";
 			}
@@ -476,6 +488,6 @@ void manageMods(Server &server, Client *client, std::vector<std::string> const &
 				return;
 		}
 			// Send a message to the channel indicating the mode change
-	channel->sendMessage(":" + client->getNickName() + " MODE " + channel->getName() + " " + mode_str + "\r\n", "");
+	sendToRecipients(":" + client->getNick() + " MODE " + channel->getName() + " " + mode_str + "\r\n", NULL, channel);
 
 }

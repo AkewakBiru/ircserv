@@ -32,17 +32,6 @@ std::vector<Client *> *Channel::getMembers(void)
     return &_members;
 }
 
-
-bool Channel::isMember(Client* client) {
-    // Iterate through the list of members in the channel
-    for (std::vector<Client *>::iterator it = _members.begin(); it != _members.end(); ++it) {
-        if (*it == client) {
-            return true; // Client is a member of the channel
-        }
-    }
-    return false; // Client is not a member of the channel
-}
-
 void Channel::addUser(Client* user) 
 {
     _members.push_back(user);
@@ -139,4 +128,16 @@ bool Channel::isMember(Client* client) {
         }
     }
     return false; // Client is not a member of the channel
+}
+
+void Channel::setOperatorStatus(Client* client, bool isOperator) {
+    if (isOperator) {
+        // Add the client to the list of operators if they're not already an operator
+        if (std::find(_operators.begin(), _operators.end(), client) == _operators.end()) {
+            _operators.push_back(client);
+        }
+    } else {
+        // Remove the client from the list of operators
+        _operators.erase(std::remove(_operators.begin(), _operators.end(), client), _operators.end());
+    }
 }

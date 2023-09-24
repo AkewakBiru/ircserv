@@ -60,12 +60,13 @@ class Channel
 		std::vector<Client *> const getOperators() const;
 		void addOperator(Client *client);
         
-        bool Channel::isMember(Client* client);
+        bool isMember(Client* client);
 
 		void addInvitee(Client *invitee);
 		std::vector<int> const &getInvitees() const;
 
 		bool isInvited(Client *client);
+        void setOperatorStatus(Client* client, bool isOperator);
         
 };
 
