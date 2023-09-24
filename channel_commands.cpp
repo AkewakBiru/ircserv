@@ -4,16 +4,20 @@
 ChannelCommands::ChannelCommands() {}
 
 ChannelCommands::~ChannelCommands() {}
+
 void ChannelCommands::invite(Channel& channel, Client& inviter, Client& invitee)
 {
     // Check if the channel is in invite-only mode and if the inviter is not an operator
     if (channel.getMode('i') && !inviter.is_op(channel))
         return;
 
+    // Get the nickname of the invitee
     std::string nick = invitee.getNickName();
 
+    // Loop through all clients connected to the server
     for (auto& user : Server::getClients())
     {
+        // If the nickname matches, set the invite flag and send a message
         if (user->getNickName() == nick)
         {
             user->setInvited(channel, true);
@@ -27,8 +31,10 @@ void ChannelCommands::invite(Channel& channel, Client& inviter, Client& invitee)
 
 void ChannelCommands::kick(Channel& channel, Client& kicker, Client& kickee)
 {
+    // Get the nickname of the user to be kicked
     std::string nick = kickee.getNickName();
 
+    // Check if the kicker is an operator
     if (!kicker.is_op(channel))
         return;
 
@@ -52,21 +58,26 @@ void ChannelCommands::kick(Channel& channel, Client& kicker, Client& kickee)
 
 void ChannelCommands::setTopic(Channel& channel, Client& client, const std::vector<std::string>& messages)
 {
+
+    // Validate the input messages
      if (messages.size() < 3 || channel.getName() != messages[1])
         return;
 
+    // Check if the topic is being queried
     if (messages.size() == 2)
     {
         channel.sendMessage("IRC: 331 " + client.getNickName() + " " + channel.getName() + " " + channel.getTopic(), "");
         return;
     }
 
+    // Check if the client is an operator and if the topic is operator-only
     if (channel.getMode('t') && !client.is_op(channel))
     {
         Server::sendToClient(client->getUserFd(), "Error: You are not a channel operator.");
         return;
     }
 
+    // Extract the new topic from the messages
     unsigned int startIndex = (messages[2] == ":") ? 3 : 2;
     std::string topic = "";
 
@@ -77,20 +88,27 @@ void ChannelCommands::setTopic(Channel& channel, Client& client, const std::vect
             topic += " " + messages[i];
     }
 
+    // Set the new topic and send a message
     channel.setTopic(topic);
     channel.sendMessage("IRC: 332 " + client.getNickName() + " " + channel.getName() + " " + channel.getTopic(), "");
 
 }
 
+// Function to manage channel modes (e.g., operator, invite-only, etc.)
 void ChannelCommands::manageMods(Channel& channel, Client& client, const std::vector<std::string>& messages)
 {
+
+    // Initialize a boolean to keep track of the mode being set (+) or unset (-)
     bool mode_bool = false;
 
+    // Basic validation: Check if the client is an operator and if the channel name matches
     if (messages.size() < 2 || channel.getName() != messages[1] || !client.is_op(channel))
         return;
 
+    // If only the channel name is provided, send the current modes of the channel
     if (messages.size() == 2)
     {
+        //build mode_str
         std::string mode_str = "";
         if (channel.getMode('o'))
             mode_str += "o";
@@ -106,17 +124,22 @@ void ChannelCommands::manageMods(Channel& channel, Client& client, const std::ve
             mode_str += std::to_string(channel.getMaxUsers());
         }
 
+        // Send the current modes to the client
         Server::sendToClient(client.getUserFd(), "324 " + client.getNickName() + " " + channel.getName() + " +" + mode_str + "\r\n");
     }
 
+    // Extract the mode string from the messages
     std::string mode = messages[2];
     std::string mode_str = "";
 
+    // Validate the mode string
     if (mode.length() < 2 || (mode[0] != '+' && mode[0] != '-'))
         return;
 
+    // Loop through the mode string to set or unset each mode
     for (unsigned int i = 0; i < mode.length(); i++)
     {
+        //handle each mode
         if (mode[i] == '+')
         {
             mode_bool = true;
@@ -130,8 +153,10 @@ void ChannelCommands::manageMods(Channel& channel, Client& client, const std::ve
         else if (mode[i] == 'o' && messages.size() > 3)
         {
             std::string nick = messages[3];
-            for (auto& user : Server::getClients()) // Modified this line
+            // Loop through all clients to find the one with the matching nickname
+            for (auto& user : Server::getClients()
             {
+                 // Set or unset the operator status for the user in the channel
                 if (user->getNickName() == nick)
                 {
                     user->setChannelOp(channel, mode_bool);
@@ -139,6 +164,7 @@ void ChannelCommands::manageMods(Channel& channel, Client& client, const std::ve
                         break;
                 }
             }
+            // Update the channel's mode
             channel.setMode('o', mode_bool);
             mode_str += "o";
         }
@@ -154,6 +180,7 @@ void ChannelCommands::manageMods(Channel& channel, Client& client, const std::ve
         }
         else if (mode[i] == 'l' && messages.size() > 3)
         {
+            // Check if the limit is within a valid range
             if (mode_bool && std::stoi(messages[3]) > 0 && std::stoi(messages[3]) < 1000)
             {
                 channel.setMaxUsers(std::stoi(messages[3]));
@@ -168,6 +195,7 @@ void ChannelCommands::manageMods(Channel& channel, Client& client, const std::ve
         }
         else if (mode[i] == 'k' && messages.size() > 3)
         {
+            // Check if a password is provided
             if (mode_bool && !messages[3].empty())
             {
                 channel.setMode('k', true);
@@ -183,7 +211,7 @@ void ChannelCommands::manageMods(Channel& channel, Client& client, const std::ve
         else
             return;
     }
-
+    // Send a message to the channel indicating the mode change
     channel.sendMessage(":" + client.getNickName() + " MODE " + channel.getName() + " " + mode_str + "\r\n", "");
 }
 
@@ -274,6 +302,7 @@ void executeCommand(std::vector<std::string> messages, User *user)
     }
     else
     {
+        // If the channel is not found, send an error message to the client
         Server::sendToClient(user->getUserFd(), ": 442, You're not on that channel\r\n");
     }
 }
