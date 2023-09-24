@@ -6,7 +6,7 @@
 /*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:07:13 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 14:39:01 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/24 16:19:33 by yel-touk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <algorithm>
 
 Channel::Channel(const std::string& _name) : name(_name), mode(), max_users(1000),
-      topic(""), pwd(""), _members(), _operators(0)
+      topic(""), pwd(""), _members(), _operators(0), _invitees(0)
 {
     // Initialize channel modes to false
     mode['o'] = false;  // channel operator
@@ -107,4 +107,11 @@ std::vector<Client *> const Channel::getOperators() const {
 
 void Channel::addOperator(Client *client) {
 	_operators.push_back(client);
+}
+
+void Channel::addInvitee(Client *invitee) {
+	_invitees.push_back(invitee->getFd());
+}
+std::vector<int> const &Channel::getInvitees() const {
+	return (_invitees);
 }
