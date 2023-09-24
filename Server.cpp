@@ -17,8 +17,8 @@ bool Server::m_state = RUNNING;
 Server::Server(std::string pass, int const port) : _creationTime(""), _password(pass),
 												   _port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
 {
-	std::array<std::string, 10> cmds = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "PART", "KICK"};
-	for (size_t i = 0; i < cmds.size(); i++)
+	std::string cmds[] = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "PART", "KICK"};
+	for (size_t i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
 	{
 		_validCmds.push_back(cmds[i]);
 	};

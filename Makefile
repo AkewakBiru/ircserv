@@ -14,7 +14,7 @@ NAME = ircserv
 
 CXX = c++
 
-CXXFLAGS = -Wextra -Werror -Wall  
+CXXFLAGS = -Wextra -Werror -Wall  -std=c++98 
 # CXXFLAGS = -std=c++98
 
 SRCS = main.cpp Server.cpp Client.cpp Parser.cpp IrcUtils.cpp Channel.cpp Commands.cpp #channel_commands.cpp

@@ -31,7 +31,6 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
-#include <array>
 #include "Parser.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"

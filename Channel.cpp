@@ -98,7 +98,7 @@ Channel* Channel::getChannel(const std::string& channelName) {
     if (allChannels.find(channelName) != allChannels.end()) {
         return allChannels[channelName];
     }
-    return nullptr;// Return null if the channel is not found
+    return NULL;// Return null if the channel is not found
 }
 
 std::vector<Client *> const Channel::getOperators() const {

@@ -185,7 +185,7 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 			throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "*", res[1], ERR_NOSUCHNICK_DESC));
 		recipientName = recipientClient->getNick();
 	}
-	for (std::vector<std::string>::const_iterator it = res.cbegin() + 3; it != res.cend(); it++)
+	for (std::vector<std::string>::const_iterator it = res.begin() + 3; it != res.end(); it++)
 		message.append(*it + " ");
 	if (message.at(0) != ':')
 		message.insert(0, ":");
@@ -457,9 +457,9 @@ void manageMods(Server &server, Client *client, std::vector<std::string> const &
 			else if (mode[i] == 'l' && res.size() > 3)
 			{
 				// Check if the limit is within a valid range
-				if (mode_bool && std::stoi(res[3]) > 0 && std::stoi(res[3]) < 1000)
+				if (mode_bool && std::atoi(res[3].c_str()) > 0 && std::atoi(res[3].c_str()) < 1000)
 				{
-					channel->setMaxUsers(std::stoi(res[3]));
+					channel->setMaxUsers(std::atoi(res[3].c_str()));
 					channel->setMode('l', true);
 				}
 				else
