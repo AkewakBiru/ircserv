@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseCodes.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:57:37 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 01:28:31 by youssef          ###   ########.fr       */
+/*   Updated: 2023/09/24 11:53:35 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,10 @@
 #define ERR_INVITEONLYCHAN_DESC ":You must be invited to join invite-only channels."
 #define ERR_BADCHANNELKEY "475"
 #define ERR_BADCHANNELKEY_DESC ":Incorrect channel key. The correct password is required to join this channel."
+#define RPL_TOPIC "332"
+#define RPL_TOPIC_DESC ":server.hostname 332 yourNickname #channel :Current topic: Welcome to the discussion on technology!"
+#define RPL_NAMREPLY "353"
+#define RPL_NAMREPLY_DESC ""
 
 // error msgs
 #define ERR_NOSUCHSERVER "402"
