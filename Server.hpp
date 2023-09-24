@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 17:19:27 by youssef          ###   ########.fr       */
+/*   Updated: 2023/09/24 17:24:07 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,8 +103,8 @@ public:
 	void executeCmd(Client *client, std::vector<std::string> const &res);
 	static bool m_state;
 
-	bool clientExists(std::string nick);
-	bool channelExists(std::string name);
+	Client *clientExists(std::string nick);
+	Channel *channelExists(std::string name);
 
 private:
 	std::string _creationTime;
