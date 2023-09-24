@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:57:37 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 11:53:35 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/24 15:41:49 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,7 @@
 #define RPL_ENDOFMOTD "376"
 #define RPL_ENDOFMOTD_DESC ":End of /MOTD command."
 
-
-//PRIVMSG
+// PRIVMSG
 #define ERR_NORECIPIENT "411"
 #define ERR_NORECIPIENT_DESC ":No recipient given. PRIVMSG command requires a recipient."
 #define ERR_NOTEXTTOSEND "412"
@@ -37,7 +36,7 @@
 #define ERR_NOSUCHNICK "401"
 #define ERR_NOSUCHNICK_DESC ":No such nickname. User does not exist on this server."
 
-//JOIN
+// JOIN
 #define ERR_INVALIDCHANNAME "448"
 #define ERR_INVALIDCHANNAME_DESC ":Cannot join channel. Channel name must start with a hash mark (#)."
 #define ERR_CHANNELISFULL "471"
@@ -77,5 +76,17 @@
 #define ERR_CMD_NOT_PASSWORD "Please send your password as the first message."
 #define ERR_INVALIDCAPCMD "410"
 #define ERR_INVALIDCAPCMD_DESC ":Invalid CAP command"
+
+#define ERR_USERSDISABLED "443"
+#define ERR_USERSDISABLED_DESC ":is already on channel"
+
+// inviting
+#define RPL_INVITING "341"
+
+#define ERR_NOSUCHCHANNEL "403"
+#define ERR_NOSUCHCHANNEL_DESC ":No such channel"
+
+#define ERR_NOTONCHANNEL "442"
+#define ERR_NOTONCHANNEL_DESC ":You're not on that channel"
 
 #endif
