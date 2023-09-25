@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 15:43:53 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/09/25 22:06:53 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,9 @@ public:
 	bool isOperator(Channel *channel);
 	bool isMember(Channel *channel);
 
+	void setTimeOutMsgSent(bool isSent);
+	bool getTimeOutMsgSent() const;
+
 private:
 	std::string _nick;
 	std::string _userName;
@@ -100,5 +103,7 @@ private:
 	std::queue<std::string> _recvMsgBuffer;
 
 	bool _state;
+
+	bool _timeOutMsgSent;
 };
 #endif

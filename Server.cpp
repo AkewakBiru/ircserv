@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 17:23:54 by youssef          ###   ########.fr       */
+/*   Updated: 2023/09/25 22:46:03 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@ void Server::cleanup()
 	// close fds
 	for (std::vector<pollfd>::iterator it = _pfds.begin(); it != _pfds.end(); it++)
 	{
-		close(it->fd);
+		if (it->fd)
+			close(it->fd);
 		it->fd = -1;
 	}
 
@@ -37,14 +38,14 @@ void Server::cleanup()
 	for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); it++)
 	{
 		delete (*it);
-		(*it) = NULL;
+		*it = NULL;
 	}
 
 	// delete channels
 	for (std::vector<Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++)
 	{
 		delete (*it);
-		(*it) = NULL;
+		*it = NULL;
 	}
 }
 
@@ -238,8 +239,11 @@ bool Server::listenForConn(void) const
 	return (true);
 }
 
-bool Server::deleteConnection(int fd)
+bool Server::deleteConnection(Client *client)
 {
+	int fd = client->getFd();
+
+	std::cout << "Lost connection to " << client->getIpAddr() << " on socket " << fd << std::endl;
 	for (std::vector<Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++)
 	{
 		std::vector<Client *> *tmp = (*it)->getMembers();
@@ -276,18 +280,8 @@ bool Server::deleteConnection(int fd)
 			break;
 		}
 	}
-	return (true);
-}
-
-/*
- **
- */
-bool Server::sendMsgAndCloseConnection(std::string const &msg, Client *client)
-{
-	std::cout << "Lost connection to " << client->getIpAddr() << " on socket " << client->getFd() << std::endl;
-	sendMsg(client->getFd(), msg);
-	close(client->getFd());
-	deleteConnection(client->getFd());
+	if (fd >= 0)
+		close(fd);
 	return (true);
 }
 
@@ -340,10 +334,8 @@ bool Server::handleRequest(void)
 			continue;
 		for (i = 0; i < _pfds.size(); i++)
 		{
-			// is someone ready to read from the created sockets
 			if (_pfds[i].revents & POLLIN)
 			{
-				// is that someone the server
 				if (_pfds[i].fd == _servfd)
 				{
 					acceptNewConnection();
@@ -355,19 +347,14 @@ bool Server::handleRequest(void)
 					data = recv(_pfds[i].fd, msg, 510, 0);
 					if (data <= 0)
 					{
-						if (data == 0)
-							sendMsg(_pfds[i].fd, "bye\r\n");
-						else
+						if (data < 0)
 							std::cerr << "recv: " << strerror(errno) << std::endl;
-						std::cout << "Lost connection to " << _clients[i - 1]->getIpAddr() << " on socket " << _pfds[i].fd << std::endl;
-						close(_pfds[i].fd);
 						_clients[i - 1]->setState(DOWN);
 					}
 					else
 					{
 						msg[510] = '\r';
 						msg[511] = '\n';
-
 						if (!preParseInput(_clients[i - 1], msg, data))
 							continue;
 						// adds msg to the dataBuffer
@@ -386,9 +373,9 @@ bool Server::handleRequest(void)
 				}
 			}
 		}
+		removeClients();
 		removeNonRespClients();
 		removeEmptyChannels();
-		removeClients();
 	}
 	return (true);
 }
@@ -479,7 +466,8 @@ void Server::processBuffer(Client *client)
 	}
 }
 
-void Server::addChannel(Channel *channel) {
+void Server::addChannel(Channel *channel)
+{
 	_channels.push_back(channel);
 }
 
@@ -604,10 +592,18 @@ void Server::removeNonRespClients()
 {
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
-		if (!isRegistered(_clients[i]->getFd()) && std::time(0) - _clients[i]->getJoinedTime() >= 60)
+		if (!isRegistered(_clients[i]->getFd()) && std::time(0) - _clients[i]->getJoinedTime() >= 20)
 		{
-			sendMsgAndCloseConnection(genServErrMsg("", _clients[i]->getIpAddr(), "Registration Timeout"), _clients[i]);
-			i--;
+			if (!_clients[i]->getTimeOutMsgSent())
+			{
+				_clients[i]->setTimeOutMsgSent(true);
+				_clients[i]->setRecvMsgBuffer(genServErrMsg("", _clients[i]->getIpAddr(), "Registration Timeout"));
+			}
+			if (!_clients[i]->getRecvMsgBuffer().size())
+			{
+				deleteConnection(_clients[i]);
+				i--;
+			}
 		}
 	}
 }
@@ -630,9 +626,11 @@ void Server::removeClients()
 {
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
+		if (_clients[i]->getRecvMsgBuffer().size())
+			continue;
 		if (_clients[i]->getState() == DOWN)
 		{
-			deleteConnection(_clients[i]->getFd());
+			deleteConnection(_clients[i]);
 			i--;
 		}
 	}
@@ -648,16 +646,20 @@ std::vector<Channel *> const &Server::getChannels() const
 	return (_channels);
 }
 
-Client *Server::clientExists(std::string nick) {
-	for (std::vector<Client *>::const_iterator it = getClients().begin(); it != getClients().end(); it++) {
+Client *Server::clientExists(std::string nick)
+{
+	for (std::vector<Client *>::const_iterator it = getClients().begin(); it != getClients().end(); it++)
+	{
 		if (nick.compare((*it)->getNick()) == 0)
 			return (*it);
 	}
 	return (NULL);
 }
 
-Channel *Server::channelExists(std::string name) {
-	for (std::vector<Channel *>::const_iterator it = getChannels().begin(); it != getChannels().end(); it++) {
+Channel *Server::channelExists(std::string name)
+{
+	for (std::vector<Channel *>::const_iterator it = getChannels().begin(); it != getChannels().end(); it++)
+	{
 		if (name.compare((*it)->getName()) == 0)
 			return (*it);
 	}

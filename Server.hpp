@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 17:24:07 by youssef          ###   ########.fr       */
+/*   Updated: 2023/09/25 21:20:41 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ public:
 
 	bool start();
 
-	bool deleteConnection(int fd);
+	bool deleteConnection(Client *client);
 
 	std::vector<Client *> const &getClients() const;
 	std::vector<Channel *> const &getChannels() const;
@@ -84,7 +84,6 @@ public:
 	std::vector<Client *>::iterator findFd(std::vector<Client *> &client, int fd);
 	ssize_t getNicksFd(std::string nick);
 
-	bool sendMsgAndCloseConnection(std::string const &msg, Client *client);
 	void sendWelcomingMsg(Client *client);
 
 	void setStatus(bool status);

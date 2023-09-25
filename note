@@ -12,3 +12,7 @@
 /// Commands -> add the command functions inside Commands.hpp/cpp
 
 /// server has -> client * vector (i deal with this part), channel * vector (when a new channel is created, allocate dynamically)
+
+/// status - indicates a client is authorized/not
+
+/// state - indicates a client is connected to the server or not
