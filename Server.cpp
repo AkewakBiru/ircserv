@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/25 22:46:03 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/26 14:00:45 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -563,10 +563,10 @@ void Server::sendWelcomingMsg(Client *client)
 {
 	std::string msg = "";
 
-	msg.append(":ircserv ").append(RPL_WELCOME).append(" :Welcome to the Internet Relay Network ").append(client->getNick()).append("!").append(client->getUserName()).append("@").append(client->getIpAddr()).append("\n");
-	msg.append(":ircserv ").append(RPL_YOURHOST).append(" :Your host is ircserv, running version 10.0\n");
-	msg.append(":ircserv ").append(RPL_CREATED).append(" :This server was created ").append(_creationTime).append("\n");
-	msg.append(":ircserv ").append(RPL_MYINFO).append(" :ircserv 10.0\r\n");
+	msg.append(":ircserv ").append(RPL_WELCOME).append(" ").append(client->getNick()).append(" :Welcome to the Internet Relay Network ").append(client->getNick()).append("!").append(client->getUserName()).append("@").append(client->getIpAddr()).append("\n");
+	msg.append(":ircserv ").append(RPL_YOURHOST).append(" ").append(client->getNick()).append(" :Your host is ircserv, running version 10.0\n");
+	msg.append(":ircserv ").append(RPL_CREATED).append(" ").append(client->getNick()).append(" :This server was created ").append(_creationTime).append("\n");
+	msg.append(":ircserv ").append(RPL_MYINFO).append(" ").append(client->getNick()).append(" ircserv 10.0\r\n");
 	client->setRecvMsgBuffer(msg);
 
 	Parser parser;
