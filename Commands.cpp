@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/27 20:19:25 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/27 23:12:27 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,17 +146,14 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 	return (true);
 }
 
-void sendToRecipients(std::string formatedMessage, Client *client, Channel *channel)
+void sendToRecipients(std::string formatedMessage, Client *client, Channel *channel, int fd)
 {
 	if (client)
 		client->setRecvMsgBuffer(formatedMessage);
 	else
-	{
 		for (std::vector<Client *>::iterator it = channel->getMembers()->begin(); it != channel->getMembers()->end(); it++)
-		{
-			(*it)->setRecvMsgBuffer(formatedMessage);
-		}
-	}
+			if (fd != (*it)->getFd())
+				(*it)->setRecvMsgBuffer(formatedMessage);
 }
 
 bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res)
@@ -189,7 +186,7 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 	if (message.at(0) != ':')
 		message.insert(0, ":");
 	formatedMessage = ":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " PRIVMSG " + recipientName + " " + message + "\r\n";
-	sendToRecipients(formatedMessage, recipientClient, recipientChannel);
+	sendToRecipients(formatedMessage, recipientClient, recipientChannel, -1);
 	return (true);
 }
 
@@ -224,16 +221,28 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 		return (false);
 	channel->addUser(client);
 	// send a message to all members that a new client has joined
-	sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " JOIN :" + res[2] + "\r\n", 0, channel);
+	sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " JOIN :" + res[2] + "\r\n", NULL, channel, -1);
 	NAMES(server, client, channel);
 	return (true);
 }
 
 bool QUIT(Server &server, Client *client, std::vector<std::string> const &res)
 {
-	(void)server;
-	(void)res;
-	client->setRecvMsgBuffer(genServErrMsg(client->getNick(), client->getIpAddr(), "Quit: " + client->getNick()));
+	std::string quitMsg = ":" + client->getNick() + "!" + client->getUserName() + "@ircserv QUIT";
+	if (res.size() > 2)
+		quitMsg += " :";
+	for (size_t i = 2; i < res.size(); i++)
+	{
+		if (i == 2 && res[2].at(0) == ':')
+			quitMsg += res[i].substr(1) + " ";
+		else
+			quitMsg += res[i] + " ";
+	}
+	quitMsg += "\r\n";
+	std::cout << quitMsg;
+	for (std::vector<Channel *>::const_iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++)
+		if ((*it)->isMember(client))
+			sendToRecipients(quitMsg, NULL, *it, client->getFd());
 	client->setState(DOWN);
 	return (true);
 }
@@ -244,7 +253,7 @@ bool QUIT(Server &server, Client *client, std::vector<std::string> const &res)
 bool NAMES(Server &server, Client *client, Channel *channel)
 {
 	(void)server;
-	std::string message = ":ircserv 353 " + client->getNick() + " = " + channel->getName() + ":";
+	std::string message = ":ircserv 353 " + client->getNick() + " = " + channel->getName() + " :";
 	std::vector<Client *> *members = channel->getMembers();
 	std::string chanop = "";
 	for (std::vector<Client *>::iterator it = members->begin(); it != members->end(); it++)
@@ -252,10 +261,9 @@ bool NAMES(Server &server, Client *client, Channel *channel)
 		if ((*it)->isOperator(channel))
 			chanop = (*it)->getNick();
 		else
-			message += (*it)->getNick();
+			message += (*it)->getNick() + " ";
 	}
-	message += chanop + "\r\n";
-	client->setRecvMsgBuffer(message);
+	client->setRecvMsgBuffer(message + "@" + chanop + "\r\n");
 	client->setRecvMsgBuffer(":ircserv 366 " + client->getNick() + " " + channel->getName() + " :End of /NAMES list.\r\n");
 	return (true);
 }
@@ -323,10 +331,10 @@ void KICK(Server &server, Client *client, std::vector<std::string> const &res)
 		if (client->getNick() == nickToKick)
 		{
 			// Notify the channel that the user has been kicked
-			sendToRecipients(client->getNick() + " has kicked " + nickToKick + " from " + channel->getName() + "!", 0, channel);
+			sendToRecipients(client->getNick() + " has kicked " + nickToKick + " from " + channel->getName() + "!", NULL, channel, client->getFd());
 
 			// Notify the kicked user
-			sendToRecipients("You have been kicked from the channel.", user, 0);
+			sendToRecipients("You have been kicked from the channel.", user, NULL, 0);
 
 			// Remove the user from the channel
 			channel->removeUser(user);
@@ -380,12 +388,11 @@ void setTopic(Server &server, Client *client, std::vector<std::string> const &re
 	// Set the new topic
 	channel->setTopic(topic);
 	// send a confirmation message
-	sendToRecipients("Topic for channel " + channel->getName() + " has been set to: " + channel->getTopic(), client, 0);
+	sendToRecipients("Topic for channel " + channel->getName() + " has been set to: " + channel->getTopic(), client, NULL, 0);
 }
 
 void manageMods(Server &server, Client *client, std::vector<std::string> const &res)
 {
-
 	(void)server;
 	// Check for minimum required parameters
 	if (res.size() < 3)
@@ -490,7 +497,7 @@ void manageMods(Server &server, Client *client, std::vector<std::string> const &
 			return;
 	}
 	// Send a message to the channel indicating the mode change
-	sendToRecipients(":" + client->getNick() + " MODE " + channel->getName() + " " + mode_str + "\r\n", NULL, channel);
+	sendToRecipients(":" + client->getNick() + " MODE " + channel->getName() + " " + mode_str + "\r\n", NULL, channel, -1);
 }
 
 bool PING(Server &server, Client *client, std::vector<std::string> const &res)
