@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/26 16:46:11 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/27 20:19:25 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -491,4 +491,13 @@ void manageMods(Server &server, Client *client, std::vector<std::string> const &
 	}
 	// Send a message to the channel indicating the mode change
 	sendToRecipients(":" + client->getNick() + " MODE " + channel->getName() + " " + mode_str + "\r\n", NULL, channel);
+}
+
+bool PING(Server &server, Client *client, std::vector<std::string> const &res)
+{
+	(void)server;
+	if (res.size() > 2)
+		throw std::invalid_argument(genErrMsg(ERR_NOSUCHSERVER, client->getNick(), res[2], ERR_NOSUCHSERVER_DESC));
+	client->setRecvMsgBuffer(":ircserv PONG\r\n");
+	return (true);
 }
