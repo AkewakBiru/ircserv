@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/26 14:00:45 by abiru            ###   ########.fr       */
+/*   Updated: 2023/09/27 19:01:49 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ bool Server::m_state = RUNNING;
 Server::Server(std::string pass, int const port) : _creationTime(""), _password(pass),
 												   _port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
 {
-	std::string cmds[] = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "PART", "KICK"};
+	std::string cmds[] = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "PART", "KICK", "PING"};
 	for (size_t i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
 	{
 		_validCmds.push_back(cmds[i]);
@@ -242,8 +242,9 @@ bool Server::listenForConn(void) const
 bool Server::deleteConnection(Client *client)
 {
 	int fd = client->getFd();
+	std::string ip = client->getIpAddr();
+	bool flag = false;
 
-	std::cout << "Lost connection to " << client->getIpAddr() << " on socket " << fd << std::endl;
 	for (std::vector<Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++)
 	{
 		std::vector<Client *> *tmp = (*it)->getMembers();
@@ -253,9 +254,12 @@ bool Server::deleteConnection(Client *client)
 			{
 				(*b)->setFd(-1);
 				tmp->erase(b);
+				flag = true;
 				break;
 			}
 		}
+		if (flag)
+			break;
 	}
 
 	// remove from clients vector
@@ -276,6 +280,7 @@ bool Server::deleteConnection(Client *client)
 		if (it->fd == fd)
 		{
 			it->fd = -1;
+			std::cout << "Lost connection to " << ip << " on socket " << fd << std::endl;
 			_pfds.erase(it);
 			break;
 		}
@@ -382,7 +387,7 @@ bool Server::handleRequest(void)
 
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
-	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG, &QUIT};
+	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG, &QUIT, &PING};
 
 	int i = 0;
 	for (std::vector<std::string>::const_iterator it = res.begin(); it != res.end(); it++)
@@ -396,7 +401,7 @@ void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 	if (!isValidCmd(toUpper(res[1], false), _validCmds))
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNCOMMAND, client->getNick(), res[1], ERR_UNKNOWNCOMMAND_DESC));
 
-	for (size_t i = 0; i < 8; i++)
+	for (size_t i = 0; i < 9; i++)
 	{
 		if (_validCmds[i] == toUpper(res[1], false))
 		{
@@ -476,16 +481,11 @@ void Server::addClient(Client *client)
 	_clients.push_back(client);
 }
 
-static bool isEqual(Client const *client, int fd)
-{
-	return (fd == client->getFd());
-}
-
 std::vector<Client *>::iterator Server::findFd(std::vector<Client *> &client, int fd)
 {
 	for (std::vector<Client *>::iterator it = client.begin(); it != client.end(); ++it)
 	{
-		if (isEqual(*it, fd))
+		if ((*it)->getFd() == fd)
 			return it;
 	}
 	return client.end();
@@ -518,7 +518,7 @@ bool Server::isRegistered(int fd)
 {
 	for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{
-		if (isEqual(*it, fd))
+		if ((*it)->getFd() == fd)
 		{
 			if ((*it)->getStatus())
 				return (true);
