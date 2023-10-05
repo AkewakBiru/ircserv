@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/27 19:01:49 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/05 18:37:13 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ bool Server::m_state = RUNNING;
 Server::Server(std::string pass, int const port) : _creationTime(""), _password(pass),
 												   _port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
 {
-	std::string cmds[] = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "PART", "KICK", "PING"};
+	std::string cmds[] = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "PART", "KICK", "PING", "INVITE"};
 	for (size_t i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
 	{
 		_validCmds.push_back(cmds[i]);
@@ -387,7 +387,7 @@ bool Server::handleRequest(void)
 
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
-	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG, &QUIT, &PING};
+	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG, &QUIT, &PING, &INVITE};
 
 	int i = 0;
 	for (std::vector<std::string>::const_iterator it = res.begin(); it != res.end(); it++)
