@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   IrcUtils.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/29 21:26:35 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/19 12:08:24 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/10/05 15:04:41 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,4 +38,5 @@ std::string &rtrim(std::string &str, std::string const &set);
 bool isValidCmd(std::string const &cmd, std::vector<std::string> const &cmdList);
 bool preParseInput(Client *client, char const *msg, ssize_t size);
 bool checkPort(std::string arg);
+void sendToRecipients(std::string formatedMessage, Client *client, Channel *channel, int fd);
 #endif

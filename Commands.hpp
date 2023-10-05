@@ -9,6 +9,7 @@
 #include "Client.hpp"
 #include "Parser.hpp"
 #include "Channel.hpp"
+#include "IrcUtils.hpp"
 
 class Server;
 

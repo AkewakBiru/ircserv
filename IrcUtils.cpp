@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   IrcUtils.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/23 23:04:19 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/05 16:31:07 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,4 +177,19 @@ bool checkPort(std::string arg)
 	if (i < arg.length() && arg[i] == '+')
 		i++;
 	return (arg.find_first_not_of("0123456789", i) == std::string::npos);
+}
+
+/*
+ ** Sends formattedMessage to either client or channel.
+ ** The formatedMessage will be sent to all clients of the channel
+ ** whose file descriptors do not match fd.
+ */
+void sendToRecipients(std::string formatedMessage, Client *client, Channel *channel, int fd)
+{
+	if (client)
+		client->setRecvMsgBuffer(formatedMessage);
+	else
+		for (std::vector<Client *>::iterator it = channel->getMembers()->begin(); it != channel->getMembers()->end(); it++)
+			if (fd != (*it)->getFd())
+				(*it)->setRecvMsgBuffer(formatedMessage);
 }

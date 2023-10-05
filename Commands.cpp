@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/27 23:12:27 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/05 15:05:39 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,16 +144,6 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 		client->setRecvMsgBuffer(genErrMsg(RPL_MOTD, client->getNick(), ":-", strBuf.substr(0, strBuf.size())));
 	client->setRecvMsgBuffer(genErrMsg(RPL_ENDOFMOTD, client->getNick(), "", RPL_ENDOFMOTD_DESC));
 	return (true);
-}
-
-void sendToRecipients(std::string formatedMessage, Client *client, Channel *channel, int fd)
-{
-	if (client)
-		client->setRecvMsgBuffer(formatedMessage);
-	else
-		for (std::vector<Client *>::iterator it = channel->getMembers()->begin(); it != channel->getMembers()->end(); it++)
-			if (fd != (*it)->getFd())
-				(*it)->setRecvMsgBuffer(formatedMessage);
 }
 
 bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res)
