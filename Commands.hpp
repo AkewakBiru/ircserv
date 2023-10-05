@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "responseCodes.hpp"
+#include "ResponseCodes.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Parser.hpp"

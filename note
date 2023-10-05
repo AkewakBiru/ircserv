@@ -1,7 +1,7 @@
 # messages can have a maximum of 512 character of which the 510th and 11th are CRLF(\r\n)
 # echo "pass pass\r\nuser user * * :user\r\nnick nick" | nc localhost 9000 -> doesn't work correctly
 
-/// responseCodes header -> Add preprocessor constants for wrong command alert (just like the ones i defined) (for the commands you are implementing)
+/// ResponseCodes header -> Add preprocessor constants for wrong command alert (just like the ones i defined) (for the commands you are implementing)
 
 /// parser -> returns a vector which has at least 2 items in it {"ignore the 1st item", "cmd", "params"}
 

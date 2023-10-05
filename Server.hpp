@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/25 21:20:41 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/05 16:34:11 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@
 #include "Channel.hpp"
 #include "IrcUtils.hpp"
 #include "Commands.hpp"
-#include "responseCodes.hpp"
+#include "ResponseCodes.hpp"
 
 class Client;
 

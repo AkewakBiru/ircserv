@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/29 21:26:35 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/05 15:04:41 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/05 16:33:55 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <string>
 #include <cstring>
 #include <signal.h>
-#include "responseCodes.hpp"
+#include "ResponseCodes.hpp"
 #include "Client.hpp"
 #include "Server.hpp"
 
