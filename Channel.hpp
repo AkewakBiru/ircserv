@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/08 18:11:21 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/08 18:19:38 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ class Channel
 
 		std::vector<Client *> const getOperators() const;
 		void addOperator(Client *client);
+        void removeOperaor(Client* client);
         
         bool isMember(Client* client);
         bool isOperator(Client* client);

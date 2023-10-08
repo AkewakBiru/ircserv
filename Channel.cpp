@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:07:13 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/08 18:13:29 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/08 18:19:46 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,10 @@ std::vector<Client *> const Channel::getOperators() const {
 
 void Channel::addOperator(Client *client) {
 	_operators.push_back(client);
+}
+
+void Channel::removeOperaor(Client* client) {
+     _operators.erase(std::remove(_operators.begin(), _operators.end(), client), _operators.end());
 }
 
 void Channel::addInvitee(Client *invitee) {
