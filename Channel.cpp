@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:07:13 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 14:39:01 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/10/08 18:13:29 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,13 +121,19 @@ bool Channel::isInvited(Client *client) {
 }
 
 bool Channel::isMember(Client* client) {
-    // Iterate through the list of members in the channel
     for (std::vector<Client *>::iterator it = _members.begin(); it != _members.end(); ++it) {
-        if (*it == client) {
-            return true; // Client is a member of the channel
-        }
+        if (*it == client)
+            return true;
     }
-    return false; // Client is not a member of the channel
+    return false;
+}
+
+bool Channel::isOperator(Client* client) {
+    for (std::vector<Client *>::iterator it = _operators.begin(); it != _operators.end(); ++it) {
+        if (*it == client)
+            return true;
+    }
+    return false;
 }
 
 void Channel::setOperatorStatus(Client* client, bool isOperator) {

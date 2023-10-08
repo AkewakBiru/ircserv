@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-touk <yel-touk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/24 16:47:02 by yel-touk         ###   ########.fr       */
+/*   Updated: 2023/10/08 18:11:21 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class Channel
 		void addOperator(Client *client);
         
         bool isMember(Client* client);
+        bool isOperator(Client* client);
 
 		void addInvitee(Client *invitee);
 		std::vector<int> const &getInvitees() const;
