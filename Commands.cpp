@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 18:36:07 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 20:01:33 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -408,36 +408,33 @@ bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 	
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
-
 	// Check if channel exists
 	channelName = res[2];
 	channel = server.channelExists(channelName);
 	if (!channel)
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", channelName, ERR_NOSUCHCHANNEL_DESC));
-
 	// Check if the client is a member of the channel
 	if (!channel->isMember(client))
 		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", channelName, ERR_NOTONCHANNEL_DESC));
-
 	// Check if the client is an operator and if the topic is operator-only
 	if (channel->getMode('t') && !channel->isOperator(client))
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, ERR_CHANOPRIVSNEEDED));
-	
 	if (res.size() == 3) {
 		//print topic
 		return (true);
 	}
-
 	// Extract the new topic from the messages
 	for (std::vector<std::string>::const_iterator it = res.begin() + 3; it != res.end(); it++)
 		topic.append(*it + " ");
 	if (topic.at(0) != ':')
 		topic.insert(0, ":");
-
+	// clear topic if only ":"
+	if (topic.size() == 1)
+		topic = "";
 	// Set the new topic
 	channel->setTopic(topic);
 	// send a confirmation message
-	sendToRecipients("Topic for channel " + channel->getName() + " has been set to: " + channel->getTopic(), client, NULL, 0);
+	sendToRecipients(client->getNick() + " changed the topic of #" + channel->getName() + " to: " + channel->getTopic(), NULL, channel, -1);
 	return (true);
 }
 
