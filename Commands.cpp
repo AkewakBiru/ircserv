@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 18:34:33 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 18:36:07 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -438,6 +438,7 @@ bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 	channel->setTopic(topic);
 	// send a confirmation message
 	sendToRecipients("Topic for channel " + channel->getName() + " has been set to: " + channel->getTopic(), client, NULL, 0);
+	return (true);
 }
 
 bool PING(Server &server, Client *client, std::vector<std::string> const &res)
