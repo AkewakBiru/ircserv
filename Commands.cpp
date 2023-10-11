@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 17:21:28 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 17:23:25 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,7 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 	{
 		channel = new Channel(res[2]);
 		server.addChannel(channel);
-		// add user to operators
+		channel->addOperator(client);
 	}
 	if (channel->getMode('i') && !channel->isInvited(client))
 		throw std::invalid_argument(genErrMsg(ERR_INVITEONLYCHAN, "*", res[1], ERR_INVITEONLYCHAN_DESC));
