@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
+/*   client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/25 22:06:53 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/11 17:11:49 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,9 +80,6 @@ public:
 	void addToBuffer(std::string msg);
 	void rmvfromBuf();
 	std::queue<std::string> const &getDataBuffer() const;
-
-	bool isOperator(Channel *channel);
-	bool isMember(Channel *channel);
 
 	void setTimeOutMsgSent(bool isSent);
 	bool getTimeOutMsgSent() const;

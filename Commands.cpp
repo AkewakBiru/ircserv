@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 17:04:00 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 17:11:42 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,7 +248,7 @@ bool NAMES(Server &server, Client *client, Channel *channel)
 	std::string chanop = "";
 	for (std::vector<Client *>::iterator it = members->begin(); it != members->end(); it++)
 	{
-		if ((*it)->isOperator(channel))
+		if (channel->isOperator(*it))
 			chanop = (*it)->getNick();
 		else
 			message += (*it)->getNick() + " ";
@@ -275,7 +275,7 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res) {
 	channel = server.channelExists(res[2]);
 	if (!channel)
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, client->getNick(), res[1], ERR_NOSUCHCHANNEL_DESC));
-	if (!client->isOperator(channel))
+	if (!channel->isOperator(client))
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", res[1], ERR_CHANOPRIVSNEEDED_DESC));
 	if (res[3].size() != 2 || (res[3].at(0) != '+' && res[3].at(0) != '-'))
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", res[1], ERR_UNKNOWNMODE_DESC));
@@ -334,7 +334,7 @@ bool INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 	if (!channel)
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, client->getNick(), res[1], ERR_NOSUCHCHANNEL_DESC));
 	//check if this client is an operator
-	if (!client->isOperator(channel))
+	if (!channel->isOperator(client))
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", res[1], ERR_CHANOPRIVSNEEDED_DESC));
 	std::vector<Client *>::const_iterator it3 = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), invitee);
 	if (it3 != channel->getMembers()->end())
@@ -369,7 +369,7 @@ void KICK(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", channelName, "You're not on that channel"));
 
 	// Check if the client is an operator in the channel
-	if (!client->isOperator(channel))
+	if (!channel->isOperator(client))
 	{
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, "You're not channel operator"));
 	}
@@ -423,7 +423,7 @@ void setTopic(Server &server, Client *client, std::vector<std::string> const &re
 		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", channelName, ERR_NOTONCHANNEL_DESC));
 
 	// Check if the client is an operator and if the topic is operator-only
-	if (channel->getMode('t') && !client->isOperator(channel))
+	if (channel->getMode('t') && !channel->isOperator(client))
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, ERR_CHANOPRIVSNEEDED));
 
 	// Extract the new topic from the messages

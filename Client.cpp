@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/09/27 19:16:00 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/11 17:11:56 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,22 +174,6 @@ std::queue<std::string> const &Client::getDataBuffer() const
 void Client::rmvfromBuf()
 {
 	_execBuf.pop();
-}
-
-bool Client::isOperator(Channel *channel)
-{
-	std::vector<Client *>::const_iterator it = std::find(channel->getOperators().begin(), channel->getOperators().end(), this);
-	if (it != channel->getOperators().end())
-		return (true);
-	return (false);
-}
-
-bool Client::isMember(Channel *channel)
-{
-	std::vector<Client *>::const_iterator it = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), this);
-	if (it != channel->getMembers()->end())
-		return (true);
-	return (false);
 }
 
 void Client::setTimeOutMsgSent(bool isSent)
