@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 18:11:45 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 20:07:37 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,11 +48,6 @@ class Channel
         std::string getPassword() const;
         void setMaxUsers(int count);
         int getMaxUsers() const;
-        
-        void kickUser(Client* _operator, Client* userToKick);
-        void inviteUser(Client* inviter, Client* invitee);
-        std::string execTopic(Client* requester, const std::string& newTopic = "");
-        void execMode(Client* requester, char modeKey, bool value = false);
 
 		std::vector<Client *> const getOperators() const;
 		void addOperator(Client *client);
