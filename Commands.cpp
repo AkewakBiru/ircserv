@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 18:07:33 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 18:34:33 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,16 +401,17 @@ void KICK(Server &server, Client *client, std::vector<std::string> const &res)
 	}
 }
 
-void setTopic(Server &server, Client *client, std::vector<std::string> const &res)
+bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 {
-	(void)server;
-	// Validate the input messages
+	Channel *channel;
+	std::string channelName, topic;
+	
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
 
-	// Get the channel name and find the channel object
-	std::string channelName = res[2];
-	Channel *channel = server.channelExists(channelName);
+	// Check if channel exists
+	channelName = res[2];
+	channel = server.channelExists(channelName);
 	if (!channel)
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", channelName, ERR_NOSUCHCHANNEL_DESC));
 
@@ -421,19 +422,17 @@ void setTopic(Server &server, Client *client, std::vector<std::string> const &re
 	// Check if the client is an operator and if the topic is operator-only
 	if (channel->getMode('t') && !channel->isOperator(client))
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, ERR_CHANOPRIVSNEEDED));
+	
+	if (res.size() == 3) {
+		//print topic
+		return (true);
+	}
 
 	// Extract the new topic from the messages
-	unsigned int startIndex = (res[2] == ":") ? 3 : 2;
-	std::string topic = "";
-
-	if (res.size() > 3 || res[2] != ":")
-	{
-		topic = res[startIndex];
-		for (unsigned int i = startIndex + 1; i < res.size(); i++)
-		{
-			topic += " " + res[i];
-		}
-	}
+	for (std::vector<std::string>::const_iterator it = res.begin() + 3; it != res.end(); it++)
+		topic.append(*it + " ");
+	if (topic.at(0) != ':')
+		topic.insert(0, ":");
 
 	// Set the new topic
 	channel->setTopic(topic);

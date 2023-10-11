@@ -30,6 +30,6 @@ bool NAMES(Server &server, Client *client, Channel *channel);
 bool MODE(Server &server, Client *client, std::vector<std::string> const &res);
 bool INVITE(Server &server, Client *client, std::vector<std::string> const &res);
 void KICK(Server &server, Client *client, std::vector<std::string> const &res);
-void setTopic(Server &server, Client *client, std::vector<std::string> const &res);
+bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res);
 bool PING(Server &server, Client *client, std::vector<std::string> const &res);
 #endif
