@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:07:13 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/08 18:19:46 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 16:28:55 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@ Channel::Channel(const std::string& _name) : name(_name), mode(), max_users(1000
       topic(""), pwd(""), _members(), _operators(0)
 {
     // Initialize channel modes to false
-    mode['o'] = false;  // channel operator
     mode['k'] = false;  // channel password (key)
     mode['t'] = false;  // topic settable by channel operator only
     mode['i'] = false;  // invite-only channel
