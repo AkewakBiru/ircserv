@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 17:02:19 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 20:05:22 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ bool Server::m_state = RUNNING;
 Server::Server(std::string pass, int const port) : _creationTime(""), _password(pass),
 												   _port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
 {
-	std::string cmds[] = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "PART", "KICK", "PING", "INVITE", "MODE"};
+	std::string cmds[] = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "KICK", "PING", "INVITE", "MODE", "TOPIC", "PART"};
 	for (size_t i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
 	{
 		_validCmds.push_back(cmds[i]);
@@ -387,7 +387,7 @@ bool Server::handleRequest(void)
 
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
-	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG, &QUIT, &PING, &INVITE, &MODE};
+	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG, &QUIT, &PING, &INVITE, &MODE, &TOPIC};
 
 	int i = 0;
 	for (std::vector<std::string>::const_iterator it = res.begin(); it != res.end(); it++)
