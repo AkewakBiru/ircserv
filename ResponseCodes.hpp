@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:36:29 by youssef           #+#    #+#             */
-/*   Updated: 2023/10/05 18:09:22 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/08 16:55:42 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,9 +50,18 @@
 #define RPL_NAMREPLY "353"
 #define RPL_NAMREPLY_DESC ""
 
+//MODE
+#define ERR_UNKNOWNMODE "472"
+#define ERR_UNKNOWNMODE_DESC ":Unknown mode character. The specified mode is not recognized."
+#define ERR_KEYSET "467"
+#define ERR_KEYSET_DESC ":Channel key is set. You must provide the correct key."
+#define ERR_USERNOTINCHANNEL "441"
+#define ERR_USERNOTINCHANNEL_DESC ":The specified user is not in the channel."
+
+
 //INVITE
 #define ERR_CHANOPRIVSNEEDED "482"
-#define ERR_CHANOPRIVSNEEDED_DESC "You need to be an operator to invite users to channels."
+#define ERR_CHANOPRIVSNEEDED_DESC ":You need to be a channel operator to execute this command."
 
 // error msgs
 #define ERR_NOSUCHSERVER "402"
@@ -92,7 +101,4 @@
 
 #define ERR_NOTONCHANNEL "442"
 #define ERR_NOTONCHANNEL_DESC ":You are not on that channel"
-
-#define ERR_USERNOTINCHANNEL "441"
-#define ERR_UNKNOWNMODE "472"
 #endif

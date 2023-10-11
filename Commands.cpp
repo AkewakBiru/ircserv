@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/05 18:36:04 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 17:04:00 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,6 +258,66 @@ bool NAMES(Server &server, Client *client, Channel *channel)
 	return (true);
 }
 
+/*
+** sets mode of the channel:
+	- if flag k is used and channel key is set, then correct channel key
+		must be provided to remove channel key
+*/
+bool MODE(Server &server, Client *client, std::vector<std::string> const &res) {
+	Channel *channel;
+	Client *user;
+	char mode;
+	bool flag;
+	// std::string message;
+
+	if (res.size() < 4)
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+	channel = server.channelExists(res[2]);
+	if (!channel)
+		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, client->getNick(), res[1], ERR_NOSUCHCHANNEL_DESC));
+	if (!client->isOperator(channel))
+		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", res[1], ERR_CHANOPRIVSNEEDED_DESC));
+	if (res[3].size() != 2 || (res[3].at(0) != '+' && res[3].at(0) != '-'))
+		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", res[1], ERR_UNKNOWNMODE_DESC));
+	if (res[3].at(0) == '+')
+		flag = true;
+	else
+		flag = false;
+	mode = res[3].at(1);
+	if ((mode == 'k' || mode == 'o' || (mode == 'l' && flag)) && (res.size() < 5 || res[4].empty()))
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+	//execute modes
+	if (mode == 'i' || mode == 't')
+		channel->setMode(mode, flag);
+	else if (mode == 'k') {
+		if (flag)
+			channel->setPassword(res[4]);
+		else if (channel->getPassword() != res[4])
+			throw std::invalid_argument(genErrMsg(ERR_KEYSET, "*", res[1], ERR_KEYSET_DESC));
+		channel->setMode('k', flag);
+	}
+	else if (mode == 'o') {
+		user = server.clientExists(res[4]);
+		if (!user || !channel->isMember(user))
+			throw std::invalid_argument(genErrMsg(ERR_USERNOTINCHANNEL, "*", res[1], ERR_USERNOTINCHANNEL_DESC));
+		if (flag && !channel->isOperator(user))
+			channel->addOperator(user);
+		else
+			channel->removeOperator(user);
+	}
+	else if (mode == 'l') {
+		if (flag && std::atol(res[4].c_str()) > 0 && std::atol(res[3].c_str()) <= INT_MAX)
+			channel->setMaxUsers(std::atol(res[4].c_str()));
+		channel->setMode('l', flag);
+	}
+	else
+		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", res[1], ERR_UNKNOWNMODE_DESC));
+	// if (mode != 'o')
+	// 	channel->setMode(mode, flag);
+	sendToRecipients("message", NULL, channel, -1);
+	return (true);
+}
+
 bool INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 {
 	Client *invitee;
@@ -383,115 +443,6 @@ void setTopic(Server &server, Client *client, std::vector<std::string> const &re
 	channel->setTopic(topic);
 	// send a confirmation message
 	sendToRecipients("Topic for channel " + channel->getName() + " has been set to: " + channel->getTopic(), client, NULL, 0);
-}
-
-void manageMods(Server &server, Client *client, std::vector<std::string> const &res)
-{
-	(void)server;
-	// Check for minimum required parameters
-	if (res.size() < 3)
-		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
-
-	// Initialize a boolean to keep track of the mode being set (+) or unset (-)
-	bool mode_bool = false;
-
-	// Get the channel object
-	Channel *channel = Channel::getChannel(res[1]);
-
-	// Check if the channel exists
-	if (!channel)
-		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", res[1], "No such channel"));
-
-	// Check if the client is an operator
-	if (!client->isOperator(channel))
-		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", res[1], "You're not channel operator"));
-
-	// Extract the mode string from the messages
-	std::string mode = res[2];
-	std::string mode_str = "";
-
-	// Validate the mode string
-	if (mode.length() < 2 || (mode[0] != '+' && mode[0] != '-'))
-		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", res[1], "Unknown mode"));
-
-	// Loop through the mode string to set or unset each mode
-	for (unsigned int i = 0; i < mode.length(); i++)
-	{
-		// Handle each mode
-		if (mode[i] == '+')
-		{
-			mode_bool = true;
-			mode_str += "+";
-		}
-		else if (mode[i] == '-')
-		{
-			mode_bool = false;
-			mode_str += "-";
-		}
-		else if (mode[i] == 'o' && res.size() > 3)
-		{
-			std::string nick = res[3];
-			// Loop through all clients to find the one with the matching nickname
-			std::vector<Client *> *members = channel->getMembers();
-			for (std::vector<Client *>::iterator it = members->begin(); it != members->end(); ++it)
-			{
-				Client *user = *it;
-				if (user->getNick() == nick)
-				{
-					channel->setOperatorStatus(user, mode_bool);
-					if (user->isOperator(channel))
-						break;
-				}
-			}
-			// Update the channel's mode
-			channel->setMode('o', mode_bool);
-			mode_str += "o";
-		}
-		else if (mode[i] == 'i')
-		{
-			channel->setMode('i', mode_bool);
-			mode_str += "i";
-		}
-		else if (mode[i] == 't')
-		{
-			channel->setMode('t', mode_bool);
-			mode_str += "t";
-		}
-		else if (mode[i] == 'l' && res.size() > 3)
-		{
-			// Check if the limit is within a valid range
-			if (mode_bool && std::atoi(res[3].c_str()) > 0 && std::atoi(res[3].c_str()) < 1000)
-			{
-				channel->setMaxUsers(std::atoi(res[3].c_str()));
-				channel->setMode('l', true);
-			}
-			else
-			{
-				channel->setMode('l', false);
-				channel->setMaxUsers(1000);
-			}
-			mode_str += "l";
-		}
-		else if (mode[i] == 'k' && res.size() > 3)
-		{
-			// Check if a password is provided
-			if (mode_bool && !res[3].empty())
-			{
-				channel->setMode('k', true);
-				channel->setPassword(res[3]);
-			}
-			else
-			{
-				channel->setMode('k', false);
-				channel->setPassword("");
-			}
-			mode_str += "k";
-		}
-		else
-			return;
-	}
-	// Send a message to the channel indicating the mode change
-	sendToRecipients(":" + client->getNick() + " MODE " + channel->getName() + " " + mode_str + "\r\n", NULL, channel, -1);
 }
 
 bool PING(Server &server, Client *client, std::vector<std::string> const &res)
