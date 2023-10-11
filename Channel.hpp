@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 20:34:42 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 16:36:42 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 18:11:45 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,6 @@ class Channel
         std::string pwd;
         std::vector<Client *> _members;
         std::vector<Client *> _operators;
-        static std::map<std::string, Channel*> allChannels;
-
 		std::vector<int> _invitees;
 
     public:
@@ -55,7 +53,6 @@ class Channel
         void inviteUser(Client* inviter, Client* invitee);
         std::string execTopic(Client* requester, const std::string& newTopic = "");
         void execMode(Client* requester, char modeKey, bool value = false);
-        static Channel* getChannel(const std::string& channelName);
 
 		std::vector<Client *> const getOperators() const;
 		void addOperator(Client *client);

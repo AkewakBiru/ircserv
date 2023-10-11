@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 21:07:13 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 16:36:49 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 18:11:55 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,17 +87,6 @@ void Channel::setMaxUsers(int count)
 int Channel::getMaxUsers() const 
 {
     return max_users;
-}
-
-// Static map to hold all channel instances
-std::map<std::string, Channel*> Channel::allChannels;
-
-// Static function to get a channel by its name
-Channel* Channel::getChannel(const std::string& channelName) {
-    if (allChannels.find(channelName) != allChannels.end()) {
-        return allChannels[channelName];
-    }
-    return NULL;// Return null if the channel is not found
 }
 
 std::vector<Client *> const Channel::getOperators() const {

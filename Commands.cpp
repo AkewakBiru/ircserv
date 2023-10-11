@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 17:23:25 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 18:07:33 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -355,7 +355,7 @@ void KICK(Server &server, Client *client, std::vector<std::string> const &res)
 	std::string nickToKick = res[2];
 
 	// Retrieve the channel object
-	Channel *channel = Channel::getChannel(channelName);
+	Channel *channel = server.channelExists(channelName);
 	if (channel == NULL)
 	{
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", channelName, "No such channel"));
@@ -409,9 +409,8 @@ void setTopic(Server &server, Client *client, std::vector<std::string> const &re
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
 
 	// Get the channel name and find the channel object
-	std::string channelName = res[1];
-	Channel *channel = Channel::getChannel(channelName);
-
+	std::string channelName = res[2];
+	Channel *channel = server.channelExists(channelName);
 	if (!channel)
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", channelName, ERR_NOSUCHCHANNEL_DESC));
 
