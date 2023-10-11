@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 17:11:42 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/11 17:21:28 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,7 +268,6 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res) {
 	Client *user;
 	char mode;
 	bool flag;
-	// std::string message;
 
 	if (res.size() < 4)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
@@ -312,9 +311,7 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res) {
 	}
 	else
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", res[1], ERR_UNKNOWNMODE_DESC));
-	// if (mode != 'o')
-	// 	channel->setMode(mode, flag);
-	sendToRecipients("message", NULL, channel, -1);
+	sendToRecipients("MODE/#" + channel->getName() + " [" + res[3] + "] by " + client->getNick(), NULL, channel, -1);
 	return (true);
 }
 
