@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 18:27:23 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 18:32:48 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -350,19 +350,19 @@ bool INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 
 	if (res.size() < 4)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
-	// check if client exists
+	// Check if client exists
 	invitee = server.clientExists(res[2]);
 	if (!invitee)
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "nick " + client->getNick(), res[1], ERR_NOSUCHNICK_DESC));
-	// check if channel exists
+	// Check if channel exists
 	channel = server.channelExists(res[3]);
 	if (!channel)
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, client->getNick(), res[1], ERR_NOSUCHCHANNEL_DESC));
-	// check if this client is an operator
+	// Check if this client is an operator
 	if (!channel->isOperator(client))
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", res[1], ERR_CHANOPRIVSNEEDED_DESC));
-	std::vector<Client *>::const_iterator it3 = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), invitee);
-	if (it3 != channel->getMembers()->end())
+	// Check if invitee is already in channel
+	if (channel->isMember(invitee))
 		throw std::invalid_argument(genErrMsg(ERR_USERSDISABLED, "nick " + client->getNick(), res[1], ERR_USERSDISABLED_DESC));
 	channel->addUser(invitee);
 	// send a message to all members that a new client has joined
