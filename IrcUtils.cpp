@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   IrcUtils.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/05 16:31:07 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 14:38:26 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,10 +157,18 @@ bool isValidCmd(std::string const &cmd, std::vector<std::string> const &cmdList)
  */
 bool preParseInput(Client *client, char const *msg, ssize_t size)
 {
-	std::string tmp(msg);
-	if (tmp.find_first_not_of(" \r\n\v\f\0") == std::string::npos)
+	bool flag = true;
+	for (ssize_t i = 0; i < size; i++)
+	{
+		if (msg[i] != '\r' && msg[i] != '\n' && msg[i] != '\0' && msg[i] != '\f' && msg[i] != '\v')
+		{
+			flag = true;
+			break;
+		}
+		flag = false;
+	}
+	if (!flag)
 		return (false);
-
 	if (std::strchr(msg, '\0') && std::strchr(msg, '\0') - msg < size)
 	{
 		client->setRecvMsgBuffer(genErrMsg(ERR_UNKNOWNCOMMAND, "*", "*", ERR_UNKNOWNCOMMAND_ILLEGAL));
