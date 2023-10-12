@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 19:08:09 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 22:08:21 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -220,9 +220,7 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 
 bool QUIT(Server &server, Client *client, std::vector<std::string> const &res)
 {
-	std::string quitMsg = ":" + client->getNick() + "!" + client->getUserName() + "@ircserv QUIT";
-	if (res.size() > 2)
-		quitMsg += " :";
+	std::string quitMsg = ":" + client->getNick() + "!" + client->getUserName() + "@ircserv QUIT :";
 	for (size_t i = 2; i < res.size(); i++)
 	{
 		if (i == 2 && res[2].at(0) == ':')
@@ -448,7 +446,7 @@ bool PING(Server &server, Client *client, std::vector<std::string> const &res)
 bool PART(Server &server, Client *client, std::vector<std::string> const &res)
 {
 	Channel *channel;
-	
+
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", "PART", ERR_NEEDMOREPARAMS_DESC));
 	channel = server.channelExists(res[2]);
@@ -457,6 +455,14 @@ bool PART(Server &server, Client *client, std::vector<std::string> const &res)
 	if (!channel->isMember(client))
 		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", "PART", ERR_NOTONCHANNEL_DESC));
 	channel->removeUser(client);
-	sendToRecipients(client->getNick() + " has parted from " + channel->getName() + "!", NULL, channel, client->getFd());
+	std::string partingMsg = ":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " PART " + channel->getName() + " :";
+	for (size_t i = 2; i < res.size(); i++)
+	{
+		if (i == 2 && res[2].at(0) == ':')
+			partingMsg += res[i].substr(1) + " ";
+		else
+			partingMsg += res[i] + " ";
+	}
+	sendToRecipients(partingMsg + "\r\n", NULL, channel, client->getFd());
 	return (true);
 }
