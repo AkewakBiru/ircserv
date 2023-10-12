@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 18:32:48 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 19:02:21 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -451,8 +451,16 @@ bool PING(Server &server, Client *client, std::vector<std::string> const &res)
 
 bool PART(Server &server, Client *client, std::vector<std::string> const &res)
 {
-	(void)server;
-	(void)client;
-	(void)res;
+	Channel *channel;
+	
+	if (res.size() < 3)
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", "PART", ERR_NEEDMOREPARAMS_DESC));
+	channel = server.channelExists(res[2]);
+	if (!channel)
+		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", "PART", ERR_NOSUCHCHANNEL_DESC));
+	if (!channel->isMember(client))
+		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", "PART", ERR_NOTONCHANNEL_DESC));
+	channel->removeUser(client);
+	sendToRecipients(client->getNick() + " has parted from " + channel->getName() + "!", NULL, channel, client->getFd());
 	return (true);
 }
