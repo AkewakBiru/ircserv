@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.hpp                                         :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 17:11:49 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 12:09:31 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include "IrcUtils.hpp"
 #include "Channel.hpp"
+#include "Server.hpp"
 
 // enum MODES
 // {
@@ -29,6 +30,8 @@
 // 	INVISIBLE,
 // 	WALLOPS,
 // };
+
+class Server;
 
 enum STATUS
 {
@@ -83,6 +86,8 @@ public:
 
 	void setTimeOutMsgSent(bool isSent);
 	bool getTimeOutMsgSent() const;
+
+	std::string getChanList(Server &server);
 
 private:
 	std::string _nick;

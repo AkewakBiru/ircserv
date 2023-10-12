@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 17:11:56 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 14:45:45 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,24 @@ bool Client::getState() const
 
 void Client::setRecvMsgBuffer(std::string msg)
 {
-	_recvMsgBuffer.push(msg);
+	if (msg.size() > 510)
+	{
+		while (msg.size())
+		{
+			if (msg.size() > 510)
+			{
+				_recvMsgBuffer.push(msg.substr(0, 510));
+				msg.erase(0, 510);
+			}
+			else if (msg.size())
+			{
+				_recvMsgBuffer.push(msg.substr(0, msg.size()));
+				msg.erase(0, msg.size());
+			}
+		}
+	}
+	else
+		_recvMsgBuffer.push(msg);
 }
 
 std::queue<std::string> Client::getRecvMsgBuffer() const
@@ -155,6 +172,7 @@ std::string const &Client::getIpAddr() const
 void Client::addToBuffer(std::string msg)
 {
 	size_t pos = 0;
+	std::string disallowed = " \r\n\v\f\0";
 
 	if (isSpaces(msg))
 		return;
@@ -184,4 +202,13 @@ void Client::setTimeOutMsgSent(bool isSent)
 bool Client::getTimeOutMsgSent() const
 {
 	return (_timeOutMsgSent);
+}
+
+std::string Client::getChanList(Server &server)
+{
+	std::string chans = "";
+	for (std::vector<Channel *>::const_iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++)
+		if ((*it)->isMember(this))
+			chans.append((*it)->getName()) + " ";
+	return (chans);
 }

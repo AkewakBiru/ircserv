@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 20:01:33 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 13:04:03 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,7 +189,7 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
 	if (res[2].compare("0") == 0)
 		// exit all channels using part
-	if (res[2].at(0) != '#')
+		if (res[2].at(0) != '#')
 			throw std::invalid_argument(genErrMsg(ERR_INVALIDCHANNAME, "*", res[1], ERR_INVALIDCHANNAME_DESC));
 	if (res.size() >= 4)
 		password = res[3];
@@ -258,12 +258,31 @@ bool NAMES(Server &server, Client *client, Channel *channel)
 	return (true);
 }
 
+bool WHOIS(Server &server, Client *client, std::vector<std::string> const &res)
+{
+	Client *recipient = client;
+
+	if (res.size() == 3)
+	{
+		if (!server.clientExists(res[2]))
+			throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "*", res[1], ERR_NOSUCHNICK_DESC));
+		recipient = server.clientExists(res[2]);
+	}
+	client->setRecvMsgBuffer(
+		":ircserv 311 " + client->getNick() + " " + recipient->getNick() + " " + recipient->getIpAddr() + " * :" + recipient->getFullName() + "\r\n" +
+		":ircserv 319 " + client->getNick() + " " + recipient->getNick() + " :" + client->getChanList(server) + "\r\n" +
+		":ircserv 312 " + client->getNick() + " " + recipient->getNick() + " ircserv" + " :Best/worst IRC server\r\n" +
+		":ircserv 318 " + client->getNick() + " " + recipient->getNick() + " :End of WHOIS list.\r\n");
+	return (true);
+}
+
 /*
 ** sets mode of the channel:
 	- if flag k is used and channel key is set, then correct channel key
 		must be provided to remove channel key
 */
-bool MODE(Server &server, Client *client, std::vector<std::string> const &res) {
+bool MODE(Server &server, Client *client, std::vector<std::string> const &res)
+{
 	Channel *channel;
 	Client *user;
 	char mode;
@@ -285,17 +304,19 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res) {
 	mode = res[3].at(1);
 	if ((mode == 'k' || mode == 'o' || (mode == 'l' && flag)) && (res.size() < 5 || res[4].empty()))
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
-	//execute modes
+	// execute modes
 	if (mode == 'i' || mode == 't')
 		channel->setMode(mode, flag);
-	else if (mode == 'k') {
+	else if (mode == 'k')
+	{
 		if (flag)
 			channel->setPassword(res[4]);
 		else if (channel->getPassword() != res[4])
 			throw std::invalid_argument(genErrMsg(ERR_KEYSET, "*", res[1], ERR_KEYSET_DESC));
 		channel->setMode('k', flag);
 	}
-	else if (mode == 'o') {
+	else if (mode == 'o')
+	{
 		user = server.clientExists(res[4]);
 		if (!user || !channel->isMember(user))
 			throw std::invalid_argument(genErrMsg(ERR_USERNOTINCHANNEL, "*", res[1], ERR_USERNOTINCHANNEL_DESC));
@@ -304,7 +325,8 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res) {
 		else
 			channel->removeOperator(user);
 	}
-	else if (mode == 'l') {
+	else if (mode == 'l')
+	{
 		if (flag && std::atol(res[4].c_str()) > 0 && std::atol(res[3].c_str()) <= INT_MAX)
 			channel->setMaxUsers(std::atol(res[4].c_str()));
 		channel->setMode('l', flag);
@@ -330,7 +352,7 @@ bool INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 	channel = server.channelExists(res[3]);
 	if (!channel)
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, client->getNick(), res[1], ERR_NOSUCHCHANNEL_DESC));
-	//check if this client is an operator
+	// check if this client is an operator
 	if (!channel->isOperator(client))
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", res[1], ERR_CHANOPRIVSNEEDED_DESC));
 	std::vector<Client *>::const_iterator it3 = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), invitee);
@@ -343,7 +365,7 @@ bool INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 	return (true);
 }
 
-void KICK(Server &server, Client *client, std::vector<std::string> const &res)
+bool KICK(Server &server, Client *client, std::vector<std::string> const &res)
 {
 	(void)server;
 	// Check if enough arguments are provided
@@ -399,13 +421,14 @@ void KICK(Server &server, Client *client, std::vector<std::string> const &res)
 	{
 		throw std::invalid_argument(genErrMsg(ERR_USERNOTINCHANNEL, "*", nickToKick, "They aren't on that channel"));
 	}
+	return (true);
 }
 
 bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 {
 	Channel *channel;
 	std::string channelName, topic;
-	
+
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
 	// Check if channel exists
@@ -419,8 +442,9 @@ bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 	// Check if the client is an operator and if the topic is operator-only
 	if (channel->getMode('t') && !channel->isOperator(client))
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, ERR_CHANOPRIVSNEEDED));
-	if (res.size() == 3) {
-		//print topic
+	if (res.size() == 3)
+	{
+		// print topic
 		return (true);
 	}
 	// Extract the new topic from the messages
@@ -441,8 +465,16 @@ bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 bool PING(Server &server, Client *client, std::vector<std::string> const &res)
 {
 	(void)server;
-	if (res.size() > 2)
+	if (res.size() > 2 && res[2] != "ircserv")
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHSERVER, client->getNick(), res[2], ERR_NOSUCHSERVER_DESC));
 	client->setRecvMsgBuffer(":ircserv PONG\r\n");
+	return (true);
+}
+
+bool PART(Server &server, Client *client, std::vector<std::string> const &res)
+{
+	(void)server;
+	(void)client;
+	(void)res;
 	return (true);
 }

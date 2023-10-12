@@ -6,17 +6,19 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 23:26:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/18 15:47:07 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/12 14:08:05 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 
-Parser::Parser(): _res(0)
-{}
+Parser::Parser() : _res(0)
+{
+}
 
 Parser::~Parser()
-{}
+{
+}
 
 std::vector<std::string> const &Parser::getRes(void) const
 {
@@ -24,15 +26,17 @@ std::vector<std::string> const &Parser::getRes(void) const
 }
 
 /*
-	** splits msg using 0x20 and puts it in a vector
-*/
+ ** splits msg using 0x20 and puts it in a vector
+ */
 void Parser::parseInput(std::string arg)
 {
-	size_t start = 0, end=0;
+	size_t start = 0, end = 0;
 
 	rtrim(arg, "\r\n");
 	if (arg.find_first_of("\v\n\r") != std::string::npos)
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNCOMMAND, "*", "*", ERR_UNKNOWNCOMMAND_ILLEGAL));
+	if (arg.size() > 510)
+		throw std::invalid_argument(genErrMsg("ERROR", "*", "*", ":Message too Long"));
 	while (start < arg.length())
 	{
 		while (arg[start] == ' ')
@@ -45,12 +49,12 @@ void Parser::parseInput(std::string arg)
 				if (end == start)
 				{
 					start++;
-					continue ;
+					continue;
 				}
 				if (end == std::string::npos)
 				{
 					_res.push_back(arg.substr(start, arg.length() - start));
-					break ;
+					break;
 				}
 			}
 			else
@@ -60,12 +64,12 @@ void Parser::parseInput(std::string arg)
 		if (end == start)
 		{
 			start++;
-			continue ;
+			continue;
 		}
 		if (end == std::string::npos)
 		{
 			_res.push_back(arg.substr(start, arg.length() - start));
-			break ;
+			break;
 		}
 		_res.push_back(arg.substr(start, end - start));
 		while (arg[end] == ' ')

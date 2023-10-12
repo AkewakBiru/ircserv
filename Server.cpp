@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/11 20:05:22 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 15:03:51 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,9 @@ bool Server::m_state = RUNNING;
 Server::Server(std::string pass, int const port) : _creationTime(""), _password(pass),
 												   _port(port), _servfd(-1), _res(NULL), _pfds(0), _clients(0), _channels(0)
 {
-	std::string cmds[] = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "KICK", "PING", "INVITE", "MODE", "TOPIC", "PART"};
+	std::string cmds[] = {"NICK", "USER", "CAP", "PASS", "MOTD", "JOIN", "PRIVMSG", "QUIT", "KICK", "PING", "INVITE", "MODE", "TOPIC", "PART", "WHOIS"};
 	for (size_t i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
-	{
 		_validCmds.push_back(cmds[i]);
-	};
 }
 
 void Server::cleanup()
@@ -348,8 +346,8 @@ bool Server::handleRequest(void)
 				}
 				else
 				{
-					std::memset(msg, 0, 512);
-					data = recv(_pfds[i].fd, msg, 510, 0);
+					std::memset(msg, 0, 511);
+					data = recv(_pfds[i].fd, msg, 511, 0);
 					if (data <= 0)
 					{
 						if (data < 0)
@@ -358,14 +356,18 @@ bool Server::handleRequest(void)
 					}
 					else
 					{
-						msg[510] = '\r';
-						msg[511] = '\n';
+						// msg[510] = '\r';
+						// msg[511] = '\n';
+						std::cout << msg << "\r\n";
 						if (!preParseInput(_clients[i - 1], msg, data))
+						{
+							std::memset(msg, 0, 512);
 							continue;
+						}
 						// adds msg to the dataBuffer
 						_clients[i - 1]->addToBuffer(msg);
 						processBuffer(_clients[i - 1]);
-						std::memset(msg, 0, sizeof(msg));
+						std::memset(msg, 0, 512);
 					}
 				}
 			}
@@ -387,7 +389,7 @@ bool Server::handleRequest(void)
 
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
-	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG, &QUIT, &PING, &INVITE, &MODE, &TOPIC};
+	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG, &QUIT, &KICK, &PING, &INVITE, &MODE, &TOPIC, &PART, &WHOIS};
 
 	int i = 0;
 	for (std::vector<std::string>::const_iterator it = res.begin(); it != res.end(); it++)
@@ -401,7 +403,7 @@ void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 	if (!isValidCmd(toUpper(res[1], false), _validCmds))
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNCOMMAND, client->getNick(), res[1], ERR_UNKNOWNCOMMAND_DESC));
 
-	for (size_t i = 0; i < 9; i++)
+	for (size_t i = 0; i < 15; i++)
 	{
 		if (_validCmds[i] == toUpper(res[1], false))
 		{
@@ -592,7 +594,7 @@ void Server::removeNonRespClients()
 {
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
-		if (!isRegistered(_clients[i]->getFd()) && std::time(0) - _clients[i]->getJoinedTime() >= 20)
+		if (!isRegistered(_clients[i]->getFd()) && std::time(0) - _clients[i]->getJoinedTime() >= 60)
 		{
 			if (!_clients[i]->getTimeOutMsgSent())
 			{

@@ -26,10 +26,11 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 bool JOIN(Server &server, Client *client, std::vector<std::string> const &res);
 bool QUIT(Server &server, Client *client, std::vector<std::string> const &res);
 bool NAMES(Server &server, Client *client, Channel *channel);
-
+bool WHOIS(Server &server, Client *client, std::vector<std::string> const &res);
 bool MODE(Server &server, Client *client, std::vector<std::string> const &res);
 bool INVITE(Server &server, Client *client, std::vector<std::string> const &res);
-void KICK(Server &server, Client *client, std::vector<std::string> const &res);
+bool KICK(Server &server, Client *client, std::vector<std::string> const &res);
+bool PART(Server &server, Client *client, std::vector<std::string> const &res);
 bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res);
 bool PING(Server &server, Client *client, std::vector<std::string> const &res);
 #endif
