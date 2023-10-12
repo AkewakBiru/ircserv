@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseCodes.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:36:29 by youssef           #+#    #+#             */
-/*   Updated: 2023/10/12 17:18:22 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/12 16:29:36 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,12 +65,22 @@
 #define ERR_UNKNOWNMODE_DESC ":Unknown mode character. The specified mode is not recognized."
 #define ERR_KEYSET "467"
 #define ERR_KEYSET_DESC ":Channel key is set. You must provide the correct key."
-#define ERR_USERNOTINCHANNEL "441"
-#define ERR_USERNOTINCHANNEL_DESC ":The specified user is not in the channel."
 
 // INVITE
+#define ERR_USERSDISABLED "443"
+#define ERR_USERSDISABLED_DESC ":The specified user is already on channel."
+
+// MODE, KICK, INVITE
+#define ERR_USERNOTINCHANNEL "441"
+#define ERR_USERNOTINCHANNEL_DESC ":The specified user is not in the channel."
+#define ERR_NOSUCHCHANNEL "403"
+#define ERR_NOSUCHCHANNEL_DESC ":No such channel."
 #define ERR_CHANOPRIVSNEEDED "482"
 #define ERR_CHANOPRIVSNEEDED_DESC ":You need to be a channel operator to execute this command."
+
+// TOPIC
+#define ERR_NOTONCHANNEL "442"
+#define ERR_NOTONCHANNEL_DESC ":You are not on that channel."
 
 // error msgs
 #define ERR_NOSUCHSERVER "402"
@@ -99,15 +109,4 @@
 #define ERR_INVALIDCAPCMD "410"
 #define ERR_INVALIDCAPCMD_DESC ":Invalid CAP command"
 
-#define ERR_USERSDISABLED "443"
-#define ERR_USERSDISABLED_DESC ":is already on channel"
-
-// inviting
-#define RPL_INVITING "341"
-
-#define ERR_NOSUCHCHANNEL "403"
-#define ERR_NOSUCHCHANNEL_DESC ":No such channel"
-
-#define ERR_NOTONCHANNEL "442"
-#define ERR_NOTONCHANNEL_DESC ":You are not on that channel"
 #endif
