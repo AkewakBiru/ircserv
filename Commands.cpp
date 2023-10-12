@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 16:33:11 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 18:27:23 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -373,59 +373,31 @@ bool INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 
 bool KICK(Server &server, Client *client, std::vector<std::string> const &res)
 {
-	// Check if enough arguments are provided
-	if (res.size() < 3)
+	Channel *channel;
+	Client *user;
+
+	if (res.size() < 4)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
-
-	// Get the channel name and nickname of the user to be kicked
-	std::string channelName = res[1];
-	std::string nickToKick = res[2];
-
-	// Retrieve the channel object
-	Channel *channel = server.channelExists(channelName);
-	if (channel == NULL)
-	{
-		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", channelName, "No such channel"));
-	}
-
+	// Check if channel exists
+	channel = server.channelExists(res[2]);
+	if (!channel)
+		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", "KICK", ERR_NOSUCHCHANNEL_DESC));
 	// Check if the client is actually on the channel
 	if (!channel->isMember(client))
-		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", channelName, "You're not on that channel"));
-
+		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", "KICK", ERR_NOTONCHANNEL_DESC));
 	// Check if the client is an operator in the channel
 	if (!channel->isOperator(client))
-	{
-		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, "You're not channel operator"));
-	}
-
-	// Declare and initialize userFound to false
-	bool userFound = false;
-
-	// Loop through the channel members to find the user to kick
-	std::vector<Client *> *users = channel->getMembers();
-	for (std::vector<Client *>::iterator it = users->begin(); it != users->end(); ++it)
-	{
-		Client *user = *it;
-		if (client->getNick() == nickToKick)
-		{
-			// Notify the channel that the user has been kicked
-			sendToRecipients(client->getNick() + " has kicked " + nickToKick + " from " + channel->getName() + "!", NULL, channel, client->getFd());
-
-			// Notify the kicked user
-			sendToRecipients("You have been kicked from the channel.", user, NULL, 0);
-
-			// Remove the user from the channel
-			channel->removeUser(user);
-			// Set userFound to true and break the loop
-			userFound = true;
-			break;
-		}
-	}
-
-	if (!userFound)
-	{
-		throw std::invalid_argument(genErrMsg(ERR_USERNOTINCHANNEL, "*", nickToKick, "They aren't on that channel"));
-	}
+		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", "KICK", ERR_CHANOPRIVSNEEDED_DESC));
+	// Check if user to kick exists on server and channel
+	user = server.clientExists(res[3]);
+	if (!user || channel->isMember(user))
+		throw std::invalid_argument(genErrMsg(ERR_USERNOTINCHANNEL, "*", "KICK", ERR_USERNOTINCHANNEL_DESC));
+	// Remove the user from the channel
+	channel->removeUser(user);
+	// Notify the channel that the user has been kicked
+	sendToRecipients(client->getNick() + " has kicked " + user->getNick() + " from " + channel->getName() + "!", NULL, channel, client->getFd());
+	// Notify the kicked user
+	sendToRecipients("You have been kicked from the channel.", user, NULL, 0);
 	return (true);
 }
 

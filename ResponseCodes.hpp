@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:36:29 by youssef           #+#    #+#             */
-/*   Updated: 2023/10/12 16:29:36 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 18:12:50 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@
 #define ERR_CHANOPRIVSNEEDED "482"
 #define ERR_CHANOPRIVSNEEDED_DESC ":You need to be a channel operator to execute this command."
 
-// TOPIC
+// TOPIC, KICK
 #define ERR_NOTONCHANNEL "442"
 #define ERR_NOTONCHANNEL_DESC ":You are not on that channel."
 
