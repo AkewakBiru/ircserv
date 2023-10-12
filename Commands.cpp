@@ -6,7 +6,7 @@
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 19:02:21 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 19:08:09 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,17 +186,13 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 	std::string password;
 
 	if (res.size() < 3)
-		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", "JOIN", ERR_NEEDMOREPARAMS_DESC));
 	if (res[2].find_first_of("\r\n ,:\a\0") != std::string::npos)
-		throw std::invalid_argument(genErrMsg(ERR_BADCHANNAME, "*", res[1], ERR_BADCHANNAME_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_BADCHANNAME, "*", "JOIN", ERR_BADCHANNAME_DESC));
 	if (res[2].size() > 50)
-		throw std::invalid_argument(genErrMsg(ERR_LONGCHANNAME, client->getNick(), res[2], ERR_LONGCHANNAME_DESC));
-	if (res[2].compare("0") == 0)
-	{
-		// exit all channels using part
-	}
+		throw std::invalid_argument(genErrMsg(ERR_LONGCHANNAME, client->getNick(), "JOIN", ERR_LONGCHANNAME_DESC));
 	if (res[2].at(0) != '#')
-		throw std::invalid_argument(genErrMsg(ERR_INVALIDCHANNAME, "*", res[1], ERR_INVALIDCHANNAME_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_INVALIDCHANNAME, "*", "JOIN", ERR_INVALIDCHANNAME_DESC));
 	if (res.size() >= 4)
 		password = res[3];
 	channel = server.channelExists(res[2]);
@@ -207,11 +203,11 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 		channel->addOperator(client);
 	}
 	if (channel->getMode('i') && !channel->isInvited(client))
-		throw std::invalid_argument(genErrMsg(ERR_INVITEONLYCHAN, "*", res[1], ERR_INVITEONLYCHAN_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_INVITEONLYCHAN, "*", "JOIN", ERR_INVITEONLYCHAN_DESC));
 	if (channel->getMembers()->size() >= static_cast<unsigned long>(channel->getMaxUsers()))
-		throw std::invalid_argument(genErrMsg(ERR_CHANNELISFULL, "*", res[1], ERR_CHANNELISFULL_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_CHANNELISFULL, "*", "JOIN", ERR_CHANNELISFULL_DESC));
 	if (channel->getMode('k') && (res.size() < 4 || channel->getPassword().compare(password)))
-		throw std::invalid_argument(genErrMsg(ERR_BADCHANNELKEY, "*", res[1], ERR_BADCHANNELKEY_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_BADCHANNELKEY, "*", "JOIN", ERR_BADCHANNELKEY_DESC));
 	std::vector<Client *>::iterator iter = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), client);
 	if (iter != channel->getMembers()->end())
 		return (false);
@@ -271,7 +267,7 @@ bool WHOIS(Server &server, Client *client, std::vector<std::string> const &res)
 	if (res.size() == 3)
 	{
 		if (!server.clientExists(res[2]))
-			throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "*", res[1], ERR_NOSUCHNICK_DESC));
+			throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "*", "WHOIS", ERR_NOSUCHNICK_DESC));
 		recipient = server.clientExists(res[2]);
 	}
 	client->setRecvMsgBuffer(
@@ -295,21 +291,21 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res)
 	bool flag;
 
 	if (res.size() < 4)
-		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", "MODE", ERR_NEEDMOREPARAMS_DESC));
 	channel = server.channelExists(res[2]);
 	if (!channel)
-		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, client->getNick(), res[1], ERR_NOSUCHCHANNEL_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, client->getNick(), "MODE", ERR_NOSUCHCHANNEL_DESC));
 	if (!channel->isOperator(client))
-		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", res[1], ERR_CHANOPRIVSNEEDED_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", "MODE", ERR_CHANOPRIVSNEEDED_DESC));
 	if (res[3].size() != 2 || (res[3].at(0) != '+' && res[3].at(0) != '-'))
-		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", res[1], ERR_UNKNOWNMODE_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", "MODE", ERR_UNKNOWNMODE_DESC));
 	if (res[3].at(0) == '+')
 		flag = true;
 	else
 		flag = false;
 	mode = res[3].at(1);
 	if ((mode == 'k' || mode == 'o' || (mode == 'l' && flag)) && (res.size() < 5 || res[4].empty()))
-		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", "MODE", ERR_NEEDMOREPARAMS_DESC));
 	// execute modes
 	if (mode == 'i' || mode == 't')
 		channel->setMode(mode, flag);
@@ -318,14 +314,14 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res)
 		if (flag)
 			channel->setPassword(res[4]);
 		else if (channel->getPassword() != res[4])
-			throw std::invalid_argument(genErrMsg(ERR_KEYSET, "*", res[1], ERR_KEYSET_DESC));
+			throw std::invalid_argument(genErrMsg(ERR_KEYSET, "*", "MODE", ERR_KEYSET_DESC));
 		channel->setMode('k', flag);
 	}
 	else if (mode == 'o')
 	{
 		user = server.clientExists(res[4]);
 		if (!user || !channel->isMember(user))
-			throw std::invalid_argument(genErrMsg(ERR_USERNOTINCHANNEL, "*", res[1], ERR_USERNOTINCHANNEL_DESC));
+			throw std::invalid_argument(genErrMsg(ERR_USERNOTINCHANNEL, "*", "MODE", ERR_USERNOTINCHANNEL_DESC));
 		if (flag && !channel->isOperator(user))
 			channel->addOperator(user);
 		else
@@ -338,7 +334,7 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res)
 		channel->setMode('l', flag);
 	}
 	else
-		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", res[1], ERR_UNKNOWNMODE_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", "MODE", ERR_UNKNOWNMODE_DESC));
 	sendToRecipients("MODE/#" + channel->getName() + " [" + res[3] + "] by " + client->getNick() + "\r\n", NULL, channel, -1);
 	return (true);
 }
@@ -349,21 +345,21 @@ bool INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 	Channel *channel;
 
 	if (res.size() < 4)
-		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", "INVITE", ERR_NEEDMOREPARAMS_DESC));
 	// Check if client exists
 	invitee = server.clientExists(res[2]);
 	if (!invitee)
-		throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "nick " + client->getNick(), res[1], ERR_NOSUCHNICK_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "nick " + client->getNick(), "INVITE", ERR_NOSUCHNICK_DESC));
 	// Check if channel exists
 	channel = server.channelExists(res[3]);
 	if (!channel)
-		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, client->getNick(), res[1], ERR_NOSUCHCHANNEL_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, client->getNick(), "INVITE", ERR_NOSUCHCHANNEL_DESC));
 	// Check if this client is an operator
 	if (!channel->isOperator(client))
-		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", res[1], ERR_CHANOPRIVSNEEDED_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", "INVITE", ERR_CHANOPRIVSNEEDED_DESC));
 	// Check if invitee is already in channel
 	if (channel->isMember(invitee))
-		throw std::invalid_argument(genErrMsg(ERR_USERSDISABLED, "nick " + client->getNick(), res[1], ERR_USERSDISABLED_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_USERSDISABLED, "nick " + client->getNick(), "INVITE", ERR_USERSDISABLED_DESC));
 	channel->addUser(invitee);
 	// send a message to all members that a new client has joined
 	sendToRecipients(":" + invitee->getNick() + "!" + invitee->getUserName() + "@" + invitee->getIpAddr() + " INVITE :" + res[3] + "\r\n", NULL, channel, -1);
@@ -377,7 +373,7 @@ bool KICK(Server &server, Client *client, std::vector<std::string> const &res)
 	Client *user;
 
 	if (res.size() < 4)
-		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", "KICK", ERR_NEEDMOREPARAMS_DESC));
 	// Check if channel exists
 	channel = server.channelExists(res[2]);
 	if (!channel)
@@ -407,18 +403,18 @@ bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 	std::string channelName, topic;
 
 	if (res.size() < 3)
-		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", "TOPIC", ERR_NEEDMOREPARAMS_DESC));
 	// Check if channel exists
 	channelName = res[2];
 	channel = server.channelExists(channelName);
 	if (!channel)
-		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", channelName, ERR_NOSUCHCHANNEL_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", "TOPIC", ERR_NOSUCHCHANNEL_DESC));
 	// Check if the client is a member of the channel
 	if (!channel->isMember(client))
-		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", channelName, ERR_NOTONCHANNEL_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", "TOPIC", ERR_NOTONCHANNEL_DESC));
 	// Check if the client is an operator and if the topic is operator-only
 	if (channel->getMode('t') && !channel->isOperator(client))
-		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, ERR_CHANOPRIVSNEEDED));
+		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", "TOPIC", ERR_CHANOPRIVSNEEDED));
 	if (res.size() == 3)
 	{
 		sendToRecipients("Topic for #" + channel->getName() + ": " + channel->getTopic() + "\r\n", NULL, channel, -1);
