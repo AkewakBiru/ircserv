@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 15:03:51 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/12 18:52:50 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,7 +241,6 @@ bool Server::deleteConnection(Client *client)
 {
 	int fd = client->getFd();
 	std::string ip = client->getIpAddr();
-	bool flag = false;
 
 	for (std::vector<Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++)
 	{
@@ -252,12 +251,9 @@ bool Server::deleteConnection(Client *client)
 			{
 				(*b)->setFd(-1);
 				tmp->erase(b);
-				flag = true;
 				break;
 			}
 		}
-		if (flag)
-			break;
 	}
 
 	// remove from clients vector
