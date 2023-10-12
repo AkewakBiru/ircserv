@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 13:04:03 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/12 17:21:18 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,21 +154,21 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 	std::string message, formatedMessage;
 
 	if (res.size() < 3)
-		throw std::invalid_argument(genErrMsg(ERR_NORECIPIENT, "*", res[1], ERR_NORECIPIENT_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NORECIPIENT, "*", "PRIVMSG", ERR_NORECIPIENT_DESC));
 	if (res.size() < 4)
-		throw std::invalid_argument(genErrMsg(ERR_NOTEXTTOSEND, "*", res[1], ERR_NOTEXTTOSEND_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_NOTEXTTOSEND, "*", "PRIVMSG", ERR_NOTEXTTOSEND_DESC));
 	if (res[2].at(0) == '#')
 	{
 		recipientChannel = server.channelExists(res[2]);
 		if (!recipientChannel)
-			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", res[1], ERR_CANNOTSENDTOCHAN_DESC));
+			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", "PRIVMSG", ERR_CANNOTSENDTOCHAN_DESC));
 		recipientName = recipientChannel->getName();
 	}
 	else
 	{
 		recipientClient = server.clientExists(res[2]);
 		if (!recipientClient)
-			throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "*", res[1], ERR_NOSUCHNICK_DESC));
+			throw std::invalid_argument(genErrMsg(ERR_NOSUCHNICK, "*", "PRIVMSG", ERR_NOSUCHNICK_DESC));
 		recipientName = recipientClient->getNick();
 	}
 	for (std::vector<std::string>::const_iterator it = res.begin() + 3; it != res.end(); it++)
@@ -187,6 +187,10 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
+	if (res[2].find_first_of("\r\n ,:\a\0") != std::string::npos)
+		throw std::invalid_argument(genErrMsg(ERR_BADCHANNAME, "*", res[1], ERR_BADCHANNAME_DESC));
+	if (res[2].size() > 50)
+		throw std::invalid_argument(genErrMsg(ERR_LONGCHANNAME, client->getNick(), res[2], ERR_LONGCHANNAME_DESC));
 	if (res[2].compare("0") == 0)
 		// exit all channels using part
 		if (res[2].at(0) != '#')
@@ -269,10 +273,10 @@ bool WHOIS(Server &server, Client *client, std::vector<std::string> const &res)
 		recipient = server.clientExists(res[2]);
 	}
 	client->setRecvMsgBuffer(
-		":ircserv 311 " + client->getNick() + " " + recipient->getNick() + " " + recipient->getIpAddr() + " * :" + recipient->getFullName() + "\r\n" +
-		":ircserv 319 " + client->getNick() + " " + recipient->getNick() + " :" + client->getChanList(server) + "\r\n" +
-		":ircserv 312 " + client->getNick() + " " + recipient->getNick() + " ircserv" + " :Best/worst IRC server\r\n" +
-		":ircserv 318 " + client->getNick() + " " + recipient->getNick() + " :End of WHOIS list.\r\n");
+		":ircserv " + std::string(RPL_WHOISUSER) + " " + client->getNick() + " " + recipient->getNick() + " " + recipient->getIpAddr() + " * :" + recipient->getFullName() + "\r\n" +
+		":ircserv " + RPL_WHOISCHANNELS + " " + client->getNick() + " " + recipient->getNick() + " :" + client->getChanList(server) + "\r\n" +
+		":ircserv " + RPL_WHOISSERVER + " " + client->getNick() + " " + recipient->getNick() + " ircserv" + " :Best/worst IRC server\r\n" +
+		":ircserv " + RPL_ENDOFWHOIS + " " + client->getNick() + " " + recipient->getNick() + " :End of WHOIS list.\r\n");
 	return (true);
 }
 

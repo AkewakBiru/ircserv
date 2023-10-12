@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseCodes.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:36:29 by youssef           #+#    #+#             */
-/*   Updated: 2023/10/08 16:55:42 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/12 17:18:22 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,17 @@
 #define ERR_NOSUCHNICK "401"
 #define ERR_NOSUCHNICK_DESC ":No such nickname. User does not exist on this server."
 
+// WHOIS
+#define RPL_WHOISUSER "311"
+#define RPL_WHOISSERVER "312"
+#define RPL_ENDOFWHOIS "318"
+#define RPL_WHOISCHANNELS "319"
+
 // JOIN
+#define ERR_BADCHANNAME "479"
+#define ERR_BADCHANNAME_DESC ":Channel is unavailable: Illegal characters"
+#define ERR_LONGCHANNAME "403"
+#define ERR_LONGCHANNAME_DESC ":Channel name is too long"
 #define ERR_INVALIDCHANNAME "448"
 #define ERR_INVALIDCHANNAME_DESC ":Cannot join channel. Channel name must start with a hash mark (#)."
 #define ERR_CHANNELISFULL "471"
@@ -50,7 +60,7 @@
 #define RPL_NAMREPLY "353"
 #define RPL_NAMREPLY_DESC ""
 
-//MODE
+// MODE
 #define ERR_UNKNOWNMODE "472"
 #define ERR_UNKNOWNMODE_DESC ":Unknown mode character. The specified mode is not recognized."
 #define ERR_KEYSET "467"
@@ -58,8 +68,7 @@
 #define ERR_USERNOTINCHANNEL "441"
 #define ERR_USERNOTINCHANNEL_DESC ":The specified user is not in the channel."
 
-
-//INVITE
+// INVITE
 #define ERR_CHANOPRIVSNEEDED "482"
 #define ERR_CHANOPRIVSNEEDED_DESC ":You need to be a channel operator to execute this command."
 

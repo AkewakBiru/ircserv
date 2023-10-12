@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 14:45:45 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/12 17:13:01 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,6 +209,6 @@ std::string Client::getChanList(Server &server)
 	std::string chans = "";
 	for (std::vector<Channel *>::const_iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++)
 		if ((*it)->isMember(this))
-			chans.append((*it)->getName()) + " ";
+			chans.append((*it)->getName() + " ");
 	return (chans);
 }
