@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 17:21:18 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/12 16:33:11 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,9 +192,11 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 	if (res[2].size() > 50)
 		throw std::invalid_argument(genErrMsg(ERR_LONGCHANNAME, client->getNick(), res[2], ERR_LONGCHANNAME_DESC));
 	if (res[2].compare("0") == 0)
+	{
 		// exit all channels using part
-		if (res[2].at(0) != '#')
-			throw std::invalid_argument(genErrMsg(ERR_INVALIDCHANNAME, "*", res[1], ERR_INVALIDCHANNAME_DESC));
+	}
+	if (res[2].at(0) != '#')
+		throw std::invalid_argument(genErrMsg(ERR_INVALIDCHANNAME, "*", res[1], ERR_INVALIDCHANNAME_DESC));
 	if (res.size() >= 4)
 		password = res[3];
 	channel = server.channelExists(res[2]);
@@ -337,7 +339,7 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res)
 	}
 	else
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", res[1], ERR_UNKNOWNMODE_DESC));
-	sendToRecipients("MODE/#" + channel->getName() + " [" + res[3] + "] by " + client->getNick(), NULL, channel, -1);
+	sendToRecipients("MODE/#" + channel->getName() + " [" + res[3] + "] by " + client->getNick() + "\r\n", NULL, channel, -1);
 	return (true);
 }
 
@@ -371,7 +373,6 @@ bool INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 
 bool KICK(Server &server, Client *client, std::vector<std::string> const &res)
 {
-	(void)server;
 	// Check if enough arguments are provided
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", res[1], ERR_NEEDMOREPARAMS_DESC));
@@ -448,7 +449,8 @@ bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", channelName, ERR_CHANOPRIVSNEEDED));
 	if (res.size() == 3)
 	{
-		// print topic
+		sendToRecipients("Topic for #" + channel->getName() + ": " + channel->getTopic() + "\r\n", NULL, channel, -1);
+		sendToRecipients("Topic set by " + client->getNick() + " [" + client->getIpAddr() + "]\r\n", NULL, channel, -1);
 		return (true);
 	}
 	// Extract the new topic from the messages
@@ -462,7 +464,7 @@ bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 	// Set the new topic
 	channel->setTopic(topic);
 	// send a confirmation message
-	sendToRecipients(client->getNick() + " changed the topic of #" + channel->getName() + " to: " + channel->getTopic(), NULL, channel, -1);
+	sendToRecipients(client->getNick() + " changed the topic of #" + channel->getName() + " to: " + channel->getTopic() + "\r\n", NULL, channel, -1);
 	return (true);
 }
 
