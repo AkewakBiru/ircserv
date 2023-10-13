@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/13 14:52:56 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/13 17:26:46 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,6 +162,8 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 		recipientChannel = server.channelExists(res[2]);
 		if (!recipientChannel)
 			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", "PRIVMSG", ERR_CANNOTSENDTOCHAN_DESC));
+		else if (recipientChannel->getMode('k'))
+			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", "PRIVMSG", "Channel is protected."));
 		recipientName = recipientChannel->getName();
 	}
 	else
@@ -211,6 +213,7 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 	std::vector<Client *>::iterator iter = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), client);
 	if (iter != channel->getMembers()->end())
 		return (false);
+	std::cout << "here joining\n";
 	channel->addUser(client);
 	// send a message to all members that a new client has joined
 	sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " JOIN :" + res[2] + "\r\n", NULL, channel, -1);
@@ -283,6 +286,7 @@ bool WHOIS(Server &server, Client *client, std::vector<std::string> const &res)
 */
 bool MODE(Server &server, Client *client, std::vector<std::string> const &res)
 {
+	std::string optional = "";
 	Channel *channel;
 	Client *user;
 	char mode;
@@ -311,9 +315,8 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res)
 	{
 		if (flag)
 			channel->setPassword(res[4]);
-		else if (channel->getPassword() != res[4])
-			throw std::invalid_argument(genErrMsg(ERR_KEYSET, "*", "MODE", ERR_KEYSET_DESC));
 		channel->setMode('k', flag);
+		optional += " " + channel->getPassword();
 	}
 	else if (mode == 'o')
 	{
@@ -333,7 +336,7 @@ bool MODE(Server &server, Client *client, std::vector<std::string> const &res)
 	}
 	else
 		throw std::invalid_argument(genErrMsg(ERR_UNKNOWNMODE, "*", "MODE", ERR_UNKNOWNMODE_DESC));
-	sendToRecipients("MODE/#" + channel->getName() + " [" + res[3] + "] by " + client->getNick() + "\r\n", NULL, channel, -1);
+	sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " MODE " + channel->getName() + " :" + res[3] + optional + "\r\n", NULL, channel, -1);
 	return (true);
 }
 
@@ -452,7 +455,6 @@ bool PART(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_NOSUCHCHANNEL, "*", "PART", ERR_NOSUCHCHANNEL_DESC));
 	if (!channel->isMember(client))
 		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", "PART", ERR_NOTONCHANNEL_DESC));
-	channel->removeUser(client);
 	std::string partingMsg = ":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " PART " + channel->getName() + " :";
 	for (size_t i = 2; i < res.size(); i++)
 	{
@@ -461,6 +463,7 @@ bool PART(Server &server, Client *client, std::vector<std::string> const &res)
 		else
 			partingMsg += res[i] + " ";
 	}
-	sendToRecipients(partingMsg + "\r\n", NULL, channel, client->getFd());
+	sendToRecipients(partingMsg + "\r\n", NULL, channel, -1);
+	channel->removeUser(client);
 	return (true);
 }
