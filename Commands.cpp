@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 22:08:21 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/13 14:52:56 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,7 +191,7 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_BADCHANNAME, "*", "JOIN", ERR_BADCHANNAME_DESC));
 	if (res[2].size() > 50)
 		throw std::invalid_argument(genErrMsg(ERR_LONGCHANNAME, client->getNick(), "JOIN", ERR_LONGCHANNAME_DESC));
-	if (res[2].at(0) != '#')
+	if (res[2].at(0) != '#' || res[2].size() < 2)
 		throw std::invalid_argument(genErrMsg(ERR_INVALIDCHANNAME, "*", "JOIN", ERR_INVALIDCHANNAME_DESC));
 	if (res.size() >= 4)
 		password = res[3];
@@ -384,14 +384,11 @@ bool KICK(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", "KICK", ERR_CHANOPRIVSNEEDED_DESC));
 	// Check if user to kick exists on server and channel
 	user = server.clientExists(res[3]);
-	if (!user || channel->isMember(user))
+	if (!user || !channel->isMember(user))
 		throw std::invalid_argument(genErrMsg(ERR_USERNOTINCHANNEL, "*", "KICK", ERR_USERNOTINCHANNEL_DESC));
 	// Remove the user from the channel
+	sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " KICK " + channel->getName() + " :" + res[3] + "\r\n", NULL, channel, -1);
 	channel->removeUser(user);
-	// Notify the channel that the user has been kicked
-	sendToRecipients(client->getNick() + " has kicked " + user->getNick() + " from " + channel->getName() + "!", NULL, channel, client->getFd());
-	// Notify the kicked user
-	sendToRecipients("You have been kicked from the channel.", user, NULL, 0);
 	return (true);
 }
 
@@ -413,10 +410,11 @@ bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 	// Check if the client is an operator and if the topic is operator-only
 	if (channel->getMode('t') && !channel->isOperator(client))
 		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", "TOPIC", ERR_CHANOPRIVSNEEDED));
-	if (res.size() == 3)
+	if (res.size() == 3 && channel->getTopic().size() > 0)
 	{
-		sendToRecipients("Topic for #" + channel->getName() + ": " + channel->getTopic() + "\r\n", NULL, channel, -1);
-		sendToRecipients("Topic set by " + client->getNick() + " [" + client->getIpAddr() + "]\r\n", NULL, channel, -1);
+		// std::string partingMsg = ":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " TOPIC " + channel->getName() + " :";
+		sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " TOPIC " + channel->getName() + " :" + "Topic for " + channel->getName() + ": " + channel->getTopic() + "\r\n", NULL, channel, -1);
+		sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " TOPIC " + channel->getName() + " :" + "Topic set by " + client->getNick() + " [" + client->getUserName() + "@" + client->getIpAddr() + "]\r\n", NULL, channel, -1);
 		return (true);
 	}
 	// Extract the new topic from the messages
@@ -430,7 +428,7 @@ bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 	// Set the new topic
 	channel->setTopic(topic);
 	// send a confirmation message
-	sendToRecipients(client->getNick() + " changed the topic of #" + channel->getName() + " to: " + channel->getTopic() + "\r\n", NULL, channel, -1);
+	sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " TOPIC " + channel->getName() + " " + channel->getTopic() + "\r\n", NULL, channel, -1);
 	return (true);
 }
 
