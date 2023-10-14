@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   responseCodes.hpp                                  :+:      :+:    :+:   */
+/*   ResponseCodes.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:36:29 by youssef           #+#    #+#             */
-/*   Updated: 2023/10/12 18:12:50 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/14 20:46:51 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@
 #define ERR_NOTEXTTOSEND "412"
 #define ERR_NOTEXTTOSEND_DESC ":No text to send. PRIVMSG command requires a message."
 #define ERR_CANNOTSENDTOCHAN "404"
-#define ERR_CANNOTSENDTOCHAN_DESC ":Cannot send message. Channel not found."
+#define ERR_CANNOTSENDTOCHAN_DESC ":Cannot send message. Channel does not exist or is not accessible."
 #define ERR_NOSUCHNICK "401"
 #define ERR_NOSUCHNICK_DESC ":No such nickname. User does not exist on this server."
 

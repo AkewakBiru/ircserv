@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
+/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/14 15:16:26 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/14 20:47:15 by youssef          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,7 +160,7 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 	if (res[2].at(0) == '#')
 	{
 		recipientChannel = server.channelExists(res[2]);
-		if (!recipientChannel)
+		if (!recipientChannel || !recipientChannel->isMember(client))
 			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", "PRIVMSG", ERR_CANNOTSENDTOCHAN_DESC));
 		else if (recipientChannel->getMode('k'))
 			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", "PRIVMSG", "Channel is protected."));
