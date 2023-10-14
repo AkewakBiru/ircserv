@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/13 17:26:46 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/14 15:16:26 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,7 +213,6 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 	std::vector<Client *>::iterator iter = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), client);
 	if (iter != channel->getMembers()->end())
 		return (false);
-	std::cout << "here joining\n";
 	channel->addUser(client);
 	// send a message to all members that a new client has joined
 	sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " JOIN :" + res[2] + "\r\n", NULL, channel, -1);
@@ -412,12 +411,13 @@ bool TOPIC(Server &server, Client *client, std::vector<std::string> const &res)
 		throw std::invalid_argument(genErrMsg(ERR_NOTONCHANNEL, "*", "TOPIC", ERR_NOTONCHANNEL_DESC));
 	// Check if the client is an operator and if the topic is operator-only
 	if (channel->getMode('t') && !channel->isOperator(client))
-		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", "TOPIC", ERR_CHANOPRIVSNEEDED));
+		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", "TOPIC", " :You need to be a channel operator"));
+	if (res.size() == 3 && channel->getTopic().size() == 0)
+		throw std::invalid_argument(genErrMsg(ERR_CHANOPRIVSNEEDED, "*", "TOPIC", " :channel topic is not set"));
 	if (res.size() == 3 && channel->getTopic().size() > 0)
 	{
-		// std::string partingMsg = ":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " TOPIC " + channel->getName() + " :";
-		sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " TOPIC " + channel->getName() + " :" + "Topic for " + channel->getName() + ": " + channel->getTopic() + "\r\n", NULL, channel, -1);
-		sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " TOPIC " + channel->getName() + " :" + "Topic set by " + client->getNick() + " [" + client->getUserName() + "@" + client->getIpAddr() + "]\r\n", NULL, channel, -1);
+		sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " TOPIC " + channel->getName() + " :" + "Topic for " + channel->getName() + ": " + channel->getTopic() + "\r\n", client, NULL, -1);
+		sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " TOPIC " + channel->getName() + " :" + "Topic set by " + client->getNick() + " [" + client->getUserName() + "@" + client->getIpAddr() + "]\r\n", client, NULL, -1);
 		return (true);
 	}
 	// Extract the new topic from the messages
