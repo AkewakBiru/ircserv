@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/14 20:47:15 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/23 21:47:22 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,10 +114,6 @@ bool MOTD(Server &server, Client *client, std::vector<std::string> const &res)
 	std::string strBuf;
 	size_t end = 0;
 
-	// for (std::vector<std::string>::const_iterator it = res.cbegin(); it != res.cend(); it++) {
-	// 	std::cout << *it << " ";
-	// }
-
 	file.open("MOTD.conf", std::ios::in);
 	if (!file.is_open())
 		throw std::invalid_argument(genErrMsg(ERR_NOMOTD, "*", "*", ERR_NOMOTD_DESC));
@@ -162,8 +158,6 @@ bool PRIVMSG(Server &server, Client *client, std::vector<std::string> const &res
 		recipientChannel = server.channelExists(res[2]);
 		if (!recipientChannel || !recipientChannel->isMember(client))
 			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", "PRIVMSG", ERR_CANNOTSENDTOCHAN_DESC));
-		else if (recipientChannel->getMode('k'))
-			throw std::invalid_argument(genErrMsg(ERR_CANNOTSENDTOCHAN, "*", "PRIVMSG", "Channel is protected."));
 		recipientName = recipientChannel->getName();
 	}
 	else
@@ -190,11 +184,11 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 	if (res.size() < 3)
 		throw std::invalid_argument(genErrMsg(ERR_NEEDMOREPARAMS, "*", "JOIN", ERR_NEEDMOREPARAMS_DESC));
 	if (res[2].find_first_of("\r\n ,:\a\0") != std::string::npos)
-		throw std::invalid_argument(genErrMsg(ERR_BADCHANNAME, "*", "JOIN", ERR_BADCHANNAME_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_BADCHANNAME, "*", res[2], ERR_BADCHANNAME_DESC));
 	if (res[2].size() > 50)
-		throw std::invalid_argument(genErrMsg(ERR_LONGCHANNAME, client->getNick(), "JOIN", ERR_LONGCHANNAME_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_LONGCHANNAME, client->getNick(), res[2], ERR_LONGCHANNAME_DESC));
 	if (res[2].at(0) != '#' || res[2].size() < 2)
-		throw std::invalid_argument(genErrMsg(ERR_INVALIDCHANNAME, "*", "JOIN", ERR_INVALIDCHANNAME_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_INVALIDCHANNAME, "*", res[2], ERR_INVALIDCHANNAME_DESC));
 	if (res.size() >= 4)
 		password = res[3];
 	channel = server.channelExists(res[2]);
@@ -205,11 +199,11 @@ bool JOIN(Server &server, Client *client, std::vector<std::string> const &res)
 		channel->addOperator(client);
 	}
 	if (channel->getMode('i') && !channel->isInvited(client))
-		throw std::invalid_argument(genErrMsg(ERR_INVITEONLYCHAN, "*", "JOIN", ERR_INVITEONLYCHAN_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_INVITEONLYCHAN, "*", channel->getName(), ERR_INVITEONLYCHAN_DESC));
 	if (channel->getMembers()->size() >= static_cast<unsigned long>(channel->getMaxUsers()))
-		throw std::invalid_argument(genErrMsg(ERR_CHANNELISFULL, "*", "JOIN", ERR_CHANNELISFULL_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_CHANNELISFULL, "*", channel->getName(), ERR_CHANNELISFULL_DESC));
 	if (channel->getMode('k') && (res.size() < 4 || channel->getPassword().compare(password)))
-		throw std::invalid_argument(genErrMsg(ERR_BADCHANNELKEY, "*", "JOIN", ERR_BADCHANNELKEY_DESC));
+		throw std::invalid_argument(genErrMsg(ERR_BADCHANNELKEY, "*", channel->getName(), ERR_BADCHANNELKEY_DESC));
 	std::vector<Client *>::iterator iter = std::find(channel->getMembers()->begin(), channel->getMembers()->end(), client);
 	if (iter != channel->getMembers()->end())
 		return (false);
@@ -360,10 +354,10 @@ bool INVITE(Server &server, Client *client, std::vector<std::string> const &res)
 	// Check if invitee is already in channel
 	if (channel->isMember(invitee))
 		throw std::invalid_argument(genErrMsg(ERR_USERSDISABLED, "nick " + client->getNick(), "INVITE", ERR_USERSDISABLED_DESC));
-	channel->addUser(invitee);
-	// send a message to all members that a new client has joined
-	sendToRecipients(":" + invitee->getNick() + "!" + invitee->getUserName() + "@" + invitee->getIpAddr() + " INVITE :" + res[3] + "\r\n", NULL, channel, -1);
-	NAMES(server, invitee, channel);
+	channel->addInvitee(invitee);
+	sendToRecipients(genErrMsg(RPL_INVITING, "*", invitee->getNick(), channel->getName()), client, 0, -1);
+	sendToRecipients(genErrMsg(RPL_SUMMONING, "*", client->getNick() + " invites you to", channel->getName()), invitee, 0, -1);
+	sendToRecipients(":" + client->getNick() + "!" + client->getUserName() + "@" + client->getIpAddr() + " INVITE " + invitee->getNick() + " :" + channel->getName() + "\r\n", NULL, channel, -1);
 	return (true);
 }
 

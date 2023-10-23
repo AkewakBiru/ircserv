@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ResponseCodes.hpp                                  :+:      :+:    :+:   */
+/*   responseCodes.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:36:29 by youssef           #+#    #+#             */
-/*   Updated: 2023/10/14 20:46:51 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/23 21:07:41 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,8 @@
 // INVITE
 #define ERR_USERSDISABLED "443"
 #define ERR_USERSDISABLED_DESC ":The specified user is already on channel."
+#define RPL_INVITING "341"
+#define RPL_SUMMONING "342"
 
 // MODE, KICK, INVITE
 #define ERR_USERNOTINCHANNEL "441"
