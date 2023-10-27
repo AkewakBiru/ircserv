@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:23 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/05 16:34:11 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/27 14:38:33 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,16 @@
 #include "IrcUtils.hpp"
 #include "Commands.hpp"
 #include "ResponseCodes.hpp"
+
+#define MAX_CLIENTS 1000
+
+// colors
+#define RESET "\033[0m"
+#define PURPLE "\033[35m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
 
 class Client;
 

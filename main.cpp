@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 19:54:40 by abiru             #+#    #+#             */
-/*   Updated: 2023/08/27 12:49:44 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/27 15:15:14 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,12 @@ int main(int ac, char **av)
 	signalHandler();
 	if (ac != 3)
 	{
-		std::cerr << "USAGE: ./ircserv port password" << std::endl;
+		printError("USAGE: ./ircserv port password", "");
 		return (EXIT_FAILURE);
 	}
 	if (!checkPort(av[1]))
 	{
-		std::cerr << "Bad character in port argument" << std::endl;
+		printError("Bad character in port argument", ": Valid Range [ 1-65535 ]");
 		return (EXIT_FAILURE);
 	}
 	Server Server(av[2], atoi(av[1]));

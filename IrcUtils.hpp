@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   IrcUtils.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youssef <youssef@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/29 21:26:35 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/05 16:33:55 by youssef          ###   ########.fr       */
+/*   Updated: 2023/10/27 14:56:19 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,11 @@ bool hasWhiteSpace(std::string const &str);
 bool hasIllegalChars(std::string const &arg);
 bool userIllegalChars(std::string const &arg);
 std::string toUpper(std::string const &arg, bool flag);
-	// structure of the string -> ":ircserv " + err_code + optional_param + cmd + ERR_DESCRIPTION + "\r\n"
 std::string genErrMsg(char const *errCode, std::string optional, std::string cmd, std::string desc);
 std::string genServErrMsg(std::string nick, std::string ip, std::string desc);
+void printError(std::string command, std::string msg);
+void logClientStatus(std::string ip, int fd, bool leaving);
+void printCommand(std::string msg);
 void sigHandle(int sig);
 void signalHandler(void);
 void sendMsg(int fd, std::string msg);

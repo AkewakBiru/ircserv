@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 11:55:48 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/23 21:47:22 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/27 15:18:06 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,7 +225,6 @@ bool QUIT(Server &server, Client *client, std::vector<std::string> const &res)
 			quitMsg += res[i] + " ";
 	}
 	quitMsg += "\r\n";
-	std::cout << quitMsg;
 	for (std::vector<Channel *>::const_iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++)
 		if ((*it)->isMember(client))
 			sendToRecipients(quitMsg, NULL, *it, client->getFd());

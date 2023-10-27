@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:54:20 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 18:52:50 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/27 15:18:22 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ bool Server::start()
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << e.what() << std::endl;
+		printError(e.what(), "");
 		return (EXIT_FAILURE);
 	}
 	setServCreationTime();
@@ -67,7 +67,10 @@ bool Server::start()
 	if (!listenForConn())
 		return (EXIT_FAILURE);
 
-	std::cout << "Listening ......" << std::endl;
+	std::cout << GREEN
+			  << "\nSERVER STARTED SUCCESSFULLY\n"
+			  << "\nListening for incoming connections ......\n"
+			  << RESET << std::endl;
 
 	handleRequest();
 	return (true);
@@ -75,7 +78,6 @@ bool Server::start()
 
 Server::~Server()
 {
-	std::cout << "destructor called\n";
 	cleanup();
 	if (_servfd >= 0)
 		close(_servfd);
@@ -162,7 +164,7 @@ bool Server::getServAddrInfo(void)
 
 	if (int status = getaddrinfo(NULL, strPort.c_str(), &hints, &_res) != 0)
 	{
-		std::cerr << "getaddrinfo" << gai_strerror(status);
+		printError("getaddrinfo: ", gai_strerror(status));
 		return (false);
 	}
 	return (true);
@@ -189,25 +191,25 @@ bool Server::createSocket(void)
 		_servfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 		if (_servfd == -1)
 		{
-			std::cerr << "socket: " << strerror(errno) << std::endl;
+			printError("socket: ", strerror(errno));
 			continue;
 		}
 		if (setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)) == -1)
 		{
 			freeaddrinfo(_res);
-			std::cerr << "setsockopt: " << strerror(errno) << std::endl;
+			printError("setsockopt: ", strerror(errno));
 			return (false);
 		}
 		if (bind(_servfd, p->ai_addr, p->ai_addrlen) == -1)
 		{
 			close(_servfd);
-			std::cerr << "bind: " << strerror(errno) << std::endl;
+			printError("bind: ", strerror(errno));
 			continue;
 		}
 		if (fcntl(_servfd, F_SETFL, O_NONBLOCK) == -1)
 		{
 			close(_servfd);
-			std::cerr << "fcntl: " << strerror(errno) << std::endl;
+			printError("fcntl: ", strerror(errno));
 			continue;
 		}
 		break;
@@ -215,7 +217,7 @@ bool Server::createSocket(void)
 	if (p == NULL)
 	{
 		freeaddrinfo(_res);
-		std::cerr << "Socket binding failed" << std::endl;
+		printError("Socket binding failed", "");
 		return (false);
 	}
 	freeaddrinfo(_res);
@@ -229,9 +231,9 @@ bool Server::listenForConn(void) const
 {
 	if (Server::m_state == STOPPED)
 		return (false);
-	if (listen(_servfd, std::numeric_limits<int>::max()) == -1)
+	if (listen(_servfd, MAX_CLIENTS) == -1)
 	{
-		std::cerr << "Listen " << strerror(errno) << std::endl;
+		printError("listen: ", strerror(errno));
 		return (false);
 	}
 	return (true);
@@ -274,7 +276,7 @@ bool Server::deleteConnection(Client *client)
 		if (it->fd == fd)
 		{
 			it->fd = -1;
-			std::cout << "Lost connection to " << ip << " on socket " << fd << std::endl;
+			logClientStatus(ip, fd, true);
 			_pfds.erase(it);
 			break;
 		}
@@ -291,7 +293,7 @@ void Server::acceptNewConnection()
 	int conn = accept(_servfd, (struct sockaddr *)&clientAddr, &cLen);
 
 	if (conn == -1)
-		std::cerr << "accept: " << strerror(errno) << std::endl;
+		printError("accept: ", strerror(errno));
 	else
 		addNewClient(conn, &clientAddr);
 }
@@ -304,7 +306,7 @@ void Server::addNewClient(int fd, struct sockaddr_storage *client_addr)
 
 	Client *client = new Client();
 	client->setIpAddr(client_addr);
-	std::cout << "Received connection from " << client->getIpAddr() << " on socket: " << fd << "\r\n";
+	logClientStatus(client->getIpAddr(), fd, false);
 	client->setJoinedTime(std::time(0));
 	client->setFd(fd);
 	_clients.push_back(client);
@@ -326,7 +328,7 @@ bool Server::handleRequest(void)
 		polled_fds = poll(&_pfds[0], _pfds.size(), -1);
 		if (polled_fds == -1)
 		{
-			std::cerr << "poll: " << strerror(errno) << std::endl;
+			printError("poll: ", strerror(errno));
 			return (EXIT_FAILURE);
 		}
 		if (polled_fds == 0)
@@ -347,19 +349,17 @@ bool Server::handleRequest(void)
 					if (data <= 0)
 					{
 						if (data < 0)
-							std::cerr << "recv: " << strerror(errno) << std::endl;
+							printError("recv: ", strerror(errno));
 						_clients[i - 1]->setState(DOWN);
 					}
 					else
 					{
-						// msg[510] = '\r';
-						// msg[511] = '\n';
-						std::cout << msg << "\r\n";
 						if (!preParseInput(_clients[i - 1], msg, data))
 						{
 							std::memset(msg, 0, 512);
 							continue;
 						}
+						printCommand(msg);
 						// adds msg to the dataBuffer
 						_clients[i - 1]->addToBuffer(msg);
 						processBuffer(_clients[i - 1]);
@@ -386,14 +386,6 @@ bool Server::handleRequest(void)
 void Server::executeCmd(Client *client, std::vector<std::string> const &res)
 {
 	bool (*funcs[])(Server &, Client *, std::vector<std::string> const &) = {&NICK, &USER, &CAP, &PASS, &MOTD, &JOIN, &PRIVMSG, &QUIT, &KICK, &PING, &INVITE, &MODE, &TOPIC, &PART, &WHOIS};
-
-	int i = 0;
-	for (std::vector<std::string>::const_iterator it = res.begin(); it != res.end(); it++)
-	{
-		std::cout << "index " << i << ":" << *it << ", ";
-		i++;
-	}
-	std::cout << std::endl;
 
 	// cmd validity is checked for authenticated client only
 	if (!isValidCmd(toUpper(res[1], false), _validCmds))

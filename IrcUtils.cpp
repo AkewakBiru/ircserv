@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 14:38:26 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/27 15:17:20 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,9 +101,10 @@ Server *getServerInstance(Server *instance)
 
 void sigHandle(int sig)
 {
-	(void)sig;
+	if (sig == 13)
+		return;
 	Server::m_state = STOPPED;
-	std::cout << "\n:ircserv 10.0 has stopped" << std::endl;
+	std::cout << GREEN << "\n:ircserv 10.0 has stopped gracefully" << RESET << std::endl;
 }
 
 void signalHandler(void)
@@ -115,12 +116,13 @@ void signalHandler(void)
 	sigemptyset(&sa.sa_mask);
 	sigaction(SIGINT, &sa, 0);
 	sigaction(SIGQUIT, &sa, 0);
+	sigaction(SIGPIPE, &sa, 0);
 }
 
 void sendMsg(int fd, std::string msg)
 {
 	if (send(fd, msg.c_str(), msg.length(), 0) == -1)
-		std::cerr << "send: " << strerror(errno) << std::endl;
+		printError("send: ", strerror(errno));
 }
 
 bool isSpaces(std::string const &str)
@@ -200,4 +202,32 @@ void sendToRecipients(std::string formatedMessage, Client *client, Channel *chan
 		for (std::vector<Client *>::iterator it = channel->getMembers()->begin(); it != channel->getMembers()->end(); it++)
 			if (fd != (*it)->getFd())
 				(*it)->setRecvMsgBuffer(formatedMessage);
+}
+
+void printError(std::string command, std::string msg)
+{
+	std::cerr << RED << command << msg << RESET << std::endl;
+}
+void logClientStatus(std::string ip, int fd, bool leaving)
+{
+	std::stringstream msg;
+
+	if (leaving)
+	{
+		msg << "Lost connection to " << ip + " on socket " << fd;
+		std::cout << RED << msg.str() << RESET << std::endl;
+	}
+	else
+	{
+		msg << "Received connection from " << ip << " on socket: " << fd;
+		std::cout << GREEN << msg.str() << RESET << std::endl;
+	}
+}
+void printCommand(std::string msg)
+{
+	std::cout << PURPLE
+			  << "\nINSTRUCTION\n"
+			  << "-----------------\n"
+			  << msg
+			  << RESET << std::endl;
 }
