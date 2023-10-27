@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:49 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 17:13:01 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/27 15:54:14 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,17 +147,10 @@ std::string &Client::getMsgDest()
 
 void Client::setIpAddr(struct sockaddr_storage *clientAddr)
 {
-	// void *addr;
-	// char ip[INET6_ADDRSTRLEN];
-
 	if (((struct sockaddr *)clientAddr)->sa_family == AF_INET)
 		_ipAddr = inet_ntoa(((struct sockaddr_in *)clientAddr)->sin_addr);
-	// addr = &((struct sockaddr_in *)clientAddr)->sin_addr;
 	else
 		_ipAddr = inet_ntoa(((struct sockaddr_in *)clientAddr)->sin_addr);
-	// addr = &((struct sockaddr_in6 *)clientAddr)->sin6_addr;
-	// _ipAddr = inet_ntop(clientAddr->ss_family, addr, ip, INET6_ADDRSTRLEN);
-	// _ipAddr = inet_ntoa(((struct sockaddr_in *)clientAddr)->sin_addr);
 }
 
 std::string const &Client::getIpAddr() const

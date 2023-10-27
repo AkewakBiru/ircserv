@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 19:54:40 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/27 15:15:14 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/27 15:54:08 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "IrcUtils.hpp"
 #include <signal.h>
 
-// basic socket communication (server)
 int main(int ac, char **av)
 {
 	signalHandler();

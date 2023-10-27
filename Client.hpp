@@ -6,7 +6,7 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/27 19:53:47 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/12 12:09:31 by abiru            ###   ########.fr       */
+/*   Updated: 2023/10/27 15:54:13 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,6 @@
 #include "IrcUtils.hpp"
 #include "Channel.hpp"
 #include "Server.hpp"
-
-// enum MODES
-// {
-// 	AWAY,
-// 	INVISIBLE,
-// 	WALLOPS,
-// };
 
 class Server;
 
