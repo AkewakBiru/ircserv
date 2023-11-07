@@ -6,12 +6,12 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 19:54:40 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/27 15:54:08 by abiru            ###   ########.fr       */
+/*   Updated: 2023/11/07 22:59:11 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
-#include "IrcUtils.hpp"
+#include "../includes/Server.hpp"
+#include "../includes/IrcUtils.hpp"
 #include <signal.h>
 
 int main(int ac, char **av)

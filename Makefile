@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: youssef <youssef@student.42.fr>            +#+  +:+       +#+         #
+#    By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/30 10:40:42 by abiru             #+#    #+#              #
-#    Updated: 2023/10/15 13:16:01 by youssef          ###   ########.fr        #
+#    Updated: 2023/11/07 23:02:15 by abiru            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,10 +14,15 @@ NAME = ircserv
 
 CXX = c++
 
-CXXFLAGS = -Wextra -Werror -Wall  -std=c++98 
-# CXXFLAGS = -std=c++98
+CXXFLAGS = -Wextra -Werror -Wall -std=c++98 
 
-SRCS = main.cpp Server.cpp Client.cpp Parser.cpp IrcUtils.cpp Channel.cpp Commands.cpp
+SRCS = srcs/main.cpp \
+		srcs/Server.cpp \
+		srcs/Client.cpp \
+		srcs/Parser.cpp \
+		srcs/IrcUtils.cpp \
+		srcs/Channel.cpp \
+		srcs/Commands.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

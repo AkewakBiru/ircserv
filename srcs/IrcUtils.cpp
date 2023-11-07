@@ -6,11 +6,11 @@
 /*   By: abiru <abiru@student.42abudhabi.ae>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/13 20:51:50 by abiru             #+#    #+#             */
-/*   Updated: 2023/10/27 15:17:20 by abiru            ###   ########.fr       */
+/*   Updated: 2023/11/07 22:59:12 by abiru            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "IrcUtils.hpp"
+#include "../includes/IrcUtils.hpp"
 
 bool hasWhiteSpace(std::string const &str)
 {
